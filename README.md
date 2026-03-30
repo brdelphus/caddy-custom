@@ -27,6 +27,8 @@ Supports two deployment modes:
 | [caddy-crowdsec-bouncer](https://github.com/hslatman/caddy-crowdsec-bouncer) | [Herman Slatman](https://github.com/hslatman) | CrowdSec IP reputation + AppSec |
 | [caddy-defender](https://github.com/jasonlovesdoggo/caddy-defender) | [Jason Cameron](https://github.com/jasonlovesdoggo) | AI scraper / cloud datacenter IP blocker |
 | [caddy-k8s](https://github.com/brdelphus/caddy-k8s) | [brdelphus](https://github.com/brdelphus) | Kubernetes Ingress controller |
+| [caddy-kubernetes-storage](https://github.com/brdelphus/caddy-kubernetes-storage) | [brdelphus](https://github.com/brdelphus) | TLS storage backend using Kubernetes Secrets |
+| [caddy-storage-redis](https://github.com/pberkel/caddy-storage-redis) | [Peter Berkel](https://github.com/pberkel) | TLS storage backend using Redis |
 
 All plugins are compiled into a single binary via [xcaddy](https://github.com/caddyserver/xcaddy). Multi-arch image: `linux/amd64` + `linux/arm64`, built natively (no QEMU).
 
