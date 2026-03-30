@@ -138,7 +138,8 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/backend-protocol: HTTPS` | Enable TLS on the upstream transport (for HTTPS backends like Mailu) |
 | `caddy.ingress/backend-tls-insecure-skip-verify: "true"` | Skip upstream TLS verification (use with self-signed backend certs) |
 | `caddy.ingress/permanent-redirect: "https://..."` | 301-redirect all paths in this Ingress to a fixed URL (e.g. `.well-known` → `/remote.php/dav`) |
-| `caddy.ingress/proxy-http-version: "1.1"` | Force HTTP/1.1 to upstream — required for streaming and WebSocket backends |
+| `caddy.ingress/proxy-http-version: "1.1"` | Force HTTP/1.1 to upstream — required for Icecast/HLS streaming backends |
+| `caddy.ingress/waf: "off"\|"on"\|"detection"` | Per-route WAF override — disable for streaming/incompatible backends (e.g. AzuraCast) |
 | `caddy.ingress/proxy-read-timeout` / `proxy-send-timeout` / `proxy-connect-timeout` | Per-route proxy timeouts (seconds) |
 | `caddy.ingress/proxy-body-size` | Max request body size (`0` = unlimited, supports `k`/`m`/`g`) |
 | `caddy.ingress/ssl-redirect: "true"` | Redirect HTTP → HTTPS with 301 |
