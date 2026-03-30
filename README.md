@@ -96,8 +96,6 @@ helm install reloader stakater/reloader -n kube-system
 
 ### 2. Install
 
-From the Helm repo (recommended):
-
 ```bash
 helm repo add caddy-custom https://brdelphus.github.io/caddy-custom
 helm repo update
@@ -108,7 +106,7 @@ helm install caddy caddy-custom/caddy \
   --values values.local.yaml
 ```
 
-Or from source:
+Or from source (after `helm dependency update helm/`):
 
 ```bash
 helm install caddy ./helm \
@@ -152,6 +150,8 @@ ingress:
 
 Routes appear in Caddy within seconds — no restart, no manual Caddyfile editing.
 
+See [`examples/`](examples/) for ready-to-use values files for common apps (Nextcloud, Mailu, Gitea, Grafana, Jellyfin, Vaultwarden, Authelia, AzuraCast).
+
 ---
 
 ## Helm values reference
@@ -174,7 +174,7 @@ hostPorts:
 service:
   enabled: true
   type: LoadBalancer
-  loadBalancerIP: ""          # request a specific IP from your LB provider
+  loadBalancerIP: ""            # request a specific IP from your LB provider
   externalTrafficPolicy: Local  # preserves real client IP, recommended
   annotations: {}
   # MetalLB:    metallb.universe.tf/address-pool: production
@@ -228,6 +228,26 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/basic-auth-secret` | Secret with `auth` htpasswd key |
 
 Full annotation reference and examples: [caddy-k8s](https://github.com/brdelphus/caddy-k8s#annotations)
+
+### Redis (bundled, optional)
+
+The Helm chart can deploy a Redis pod alongside Caddy using the [Bitnami Redis](https://github.com/bitnami/charts/tree/main/bitnami/redis) sub-chart. When enabled, caddy-k8s uses Redis to persist the Ingress → route ID mapping across Caddy restarts, preventing stale routes from accumulating when Ingresses are deleted while Caddy is down.
+
+```yaml
+redis:
+  enabled: true
+  architecture: standalone   # standalone | replication
+  auth:
+    enabled: false           # set true and provide password for production
+  master:
+    persistence:
+      enabled: true          # survive pod restarts
+      size: 1Gi
+```
+
+All `redis.*` values are passed through to the Bitnami Redis sub-chart. The address is wired into caddy-k8s automatically — no manual configuration needed.
+
+To use an **external** Redis instead, leave `redis.enabled: false` and configure the address directly in the Caddyfile via the `k8s_ingress` global block.
 
 ### WAF (Coraza / OWASP CRS)
 
@@ -342,9 +362,6 @@ tls:
     enabled: true
     issuerName: letsencrypt-prod
     issuerKind: ClusterIssuer
-    dnsNames:
-      - "*.example.com"
-      - "example.com"
   # Alternative: use an existing TLS secret
   existingSecret: ""
   mountPath: /certs
@@ -382,6 +399,27 @@ tracing:
 
 ---
 
+## Examples
+
+Ready-to-use values files are in [`examples/`](examples/):
+
+| File | Description |
+|---|---|
+| [`caddy/baremetal.yaml`](examples/caddy/baremetal.yaml) | DaemonSet + hostPorts for bare-metal k3s |
+| [`caddy/loadbalancer.yaml`](examples/caddy/loadbalancer.yaml) | Deployment + LoadBalancer for MetalLB / cloud |
+| [`caddy/mail.yaml`](examples/caddy/mail.yaml) | L4 TCP passthrough for SMTP / IMAP (stack on top of either above) |
+| [`caddy/full.yaml`](examples/caddy/full.yaml) | All optional plugins enabled |
+| [`apps/nextcloud.yaml`](examples/apps/nextcloud.yaml) | Nextcloud values override |
+| [`apps/mailu.yaml`](examples/apps/mailu.yaml) | Mailu values override |
+| [`apps/gitea.yaml`](examples/apps/gitea.yaml) | Gitea values override |
+| [`apps/grafana.yaml`](examples/apps/grafana.yaml) | Grafana values override |
+| [`apps/jellyfin.yaml`](examples/apps/jellyfin.yaml) | Jellyfin values override |
+| [`apps/vaultwarden.yaml`](examples/apps/vaultwarden.yaml) | Vaultwarden values override |
+| [`apps/authelia.yaml`](examples/apps/authelia.yaml) | Authelia values override |
+| [`apps/azuracast.yaml`](examples/apps/azuracast.yaml) | AzuraCast Ingress manifest |
+
+---
+
 ## CI / Image build
 
 Images are built on GitHub Actions using native runners (no QEMU):
@@ -406,6 +444,7 @@ Built on top of:
 
 - [Caddy](https://github.com/caddyserver/caddy) by [Matt Holt](https://github.com/mholt) and contributors
 - [xcaddy](https://github.com/caddyserver/xcaddy) by the Caddy team
+- [Bitnami Redis](https://github.com/bitnami/charts/tree/main/bitnami/redis) chart for the optional bundled Redis
 - All plugin authors listed in the [What's inside](#whats-inside) table above
 
 ---
