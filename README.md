@@ -92,12 +92,15 @@ TLS is handled by CertMagic (built-in ACME, certs stored in Kubernetes Secrets o
 ### 1. Prerequisites
 
 ```bash
-# cert-manager + CSI driver
-helm install cert-manager jetstack/cert-manager -n cert-manager --set crds.enabled=true
-helm install cert-manager-csi-driver jetstack/cert-manager-csi-driver -n cert-manager
-
 # Stakater Reloader (triggers rolling restart on ConfigMap changes)
 helm install reloader stakater/reloader -n kube-system
+```
+
+**cert-manager + CSI driver** — only needed if using `tls.certManagerCSI`. Skip if using CertMagic built-in ACME.
+
+```bash
+helm install cert-manager jetstack/cert-manager -n cert-manager --set crds.enabled=true
+helm install cert-manager-csi-driver jetstack/cert-manager-csi-driver -n cert-manager
 ```
 
 ### 2. Install
