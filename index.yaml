@@ -3,6 +3,24 @@ entries:
   caddy:
   - apiVersion: v2
     appVersion: 2.11.2
+    created: "2026-03-30T16:47:27.731696065Z"
+    description: Caddy ingress with WAF, TCP/UDP, cert-manager CSI, CrowdSec, GeoIP,
+      rate limiting and caching
+    digest: 7cacbbea3fe8d9496e5cde1511bb2aaf50c6915ed46b3a4f2cb57e829cda7b8d
+    keywords:
+    - caddy
+    - ingress
+    - waf
+    - coraza
+    - l4
+    - crowdsec
+    name: caddy
+    type: application
+    urls:
+    - https://github.com/brdelphus/caddy-custom/releases/download/caddy-0.2.0/caddy-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 2.11.2
     created: "2026-03-30T16:40:01.128649519Z"
     description: Caddy ingress with WAF, TCP/UDP, cert-manager CSI, CrowdSec, GeoIP,
       rate limiting and caching
@@ -19,4 +37,4 @@ entries:
     urls:
     - https://github.com/brdelphus/caddy-custom/releases/download/caddy-0.1.0/caddy-0.1.0.tgz
     version: 0.1.0
-generated: "2026-03-30T16:40:01.128654197Z"
+generated: "2026-03-30T16:47:27.731707437Z"
