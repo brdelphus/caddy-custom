@@ -91,16 +91,17 @@ TLS is handled by CertMagic (built-in ACME, certs stored in Kubernetes Secrets o
 
 ### 1. Prerequisites
 
-```bash
-# Stakater Reloader (triggers rolling restart on ConfigMap changes)
-helm install reloader stakater/reloader -n kube-system
-```
+No hard dependencies — Caddy manages TLS natively via CertMagic.
 
-**cert-manager + CSI driver** — only needed if using `tls.certManagerCSI`. Skip if using CertMagic built-in ACME.
+**Only needed when using `tls.certManagerCSI`:**
 
 ```bash
+# cert-manager issues the certificates
 helm install cert-manager jetstack/cert-manager -n cert-manager --set crds.enabled=true
+# CSI driver mounts them as files into the pod
 helm install cert-manager-csi-driver jetstack/cert-manager-csi-driver -n cert-manager
+# Reloader triggers a rolling restart when the mounted cert files change
+helm install reloader stakater/reloader -n kube-system
 ```
 
 ### 2. Install
