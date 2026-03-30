@@ -233,6 +233,15 @@ service:
     # GCE internal LB:
     # cloud.google.com/load-balancer-type: Internal
 
+# ── Workload type ─────────────────────────────────────────────────────────────
+# DaemonSet  — runs on every node; use with hostPorts for bare-metal k3s.
+# Deployment — fixed replica count; use with service.type: LoadBalancer (MetalLB,
+#              cloud LBs). Set hostPorts.enabled: false when using a LoadBalancer
+#              so pods don't compete for node ports.
+
+workloadType: DaemonSet   # DaemonSet | Deployment
+replicaCount: 2           # only used when workloadType: Deployment
+
 # ── DaemonSet / pod settings ───────────────────────────────────────────────────
 # hostPorts bind directly on each node's network interface.
 # Can coexist with the LoadBalancer service — disable if your LB provider

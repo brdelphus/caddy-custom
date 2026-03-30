@@ -1,5 +1,6 @@
+{{- $isDaemonSet := ne .Values.workloadType "Deployment" -}}
 apiVersion: apps/v1
-kind: DaemonSet
+kind: {{ if $isDaemonSet }}DaemonSet{{ else }}Deployment{{ end }}
 metadata:
   name: {{ include "caddy.fullname" . }}
   namespace: {{ .Release.Namespace }}
@@ -14,8 +15,14 @@ spec:
   selector:
     matchLabels:
       {{- include "caddy.selectorLabels" . | nindent 6 }}
+  {{- if $isDaemonSet }}
   updateStrategy:
     type: RollingUpdate
+  {{- else }}
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: RollingUpdate
+  {{- end }}
   template:
     metadata:
       labels:
