@@ -1,0 +1,79 @@
+# ── Full-featured example ─────────────────────────────────────────────────────
+# All optional plugins enabled. Tune to your needs before deploying.
+#
+# Usage:
+#   helm install caddy caddy-custom/caddy -n caddy --create-namespace -f full.yaml
+
+k8sIngress:
+  enabled: true
+  ingressClass: caddy-custom
+  isDefaultClass: false
+  security:
+    waf: true
+    wafMode: DetectionOnly   # switch to On once tuned
+    securityHeaders: true
+    injectRealIP: true
+
+workloadType: DaemonSet
+hostPorts:
+  enabled: true
+  http: 80
+  https: 443
+
+tls:
+  certManagerCSI:
+    issuerName: letsencrypt-prod
+    issuerKind: ClusterIssuer
+
+realIP:
+  trustedProxies:
+    - 10.42.0.0/16
+    - 127.0.0.1/32
+  strict: true
+  injectXRealIP: true
+
+securityHeaders:
+  enabled: true
+  hsts:
+    enabled: true
+    maxAge: 31536000
+    includeSubDomains: true
+
+plugins:
+  coraza:
+    enabled: true
+    ruleEngine: DetectionOnly
+
+  crowdsec:
+    enabled: true
+    lapiUrl: http://crowdsec-lapi.crowdsec.svc.cluster.local:8080
+    existingSecret: crowdsec-bouncer-secret   # key: api-key
+    tickerInterval: 15s
+
+  rateLimit:
+    enabled: true
+    window: 1m
+    maxEvents: 200
+    key: "{client_ip}"
+
+  geoip:
+    enabled: true
+    dbPath: /data/geoip/GeoLite2-Country.mmdb
+    deniedCountries: []   # e.g. ["CN", "RU", "KP", "IR"]
+    updater:
+      enabled: true
+      existingSecret: maxmind-secret   # keys: account-id, license-key
+
+  defender:
+    enabled: true
+    action: block
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 30s
+
+reloader:
+  enabled: true

@@ -1,0 +1,33 @@
+# ── Gitea ─────────────────────────────────────────────────────────────────────
+# Helm chart: https://gitea.com/gitea/helm-chart
+#
+#   helm repo add gitea-charts https://dl.gitea.com/charts
+#   helm install gitea gitea-charts/gitea -n gitea --create-namespace -f gitea.yaml
+
+gitea:
+  config:
+    server:
+      DOMAIN: gitea.example.com
+      ROOT_URL: https://gitea.example.com
+      SSH_DOMAIN: gitea.example.com
+
+ingress:
+  enabled: true
+  className: caddy-custom
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+    caddy.ingress/proxy-body-size: "1G"   # for large repo pushes
+  hosts:
+    - host: gitea.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - gitea.example.com
+
+# SSH — expose via NodePort or a separate Service (not through Caddy HTTP)
+service:
+  ssh:
+    type: NodePort
+    nodePort: 30022

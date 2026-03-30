@@ -1,0 +1,35 @@
+# ── Nextcloud ─────────────────────────────────────────────────────────────────
+# Helm chart: https://github.com/nextcloud/helm
+#
+#   helm repo add nextcloud https://nextcloud.github.io/helm
+#   helm install nextcloud nextcloud/nextcloud -n nextcloud --create-namespace \
+#     -f nextcloud.yaml
+
+nextcloud:
+  host: nextcloud.example.com
+
+ingress:
+  enabled: true
+  className: caddy-custom
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+    # Nextcloud .well-known redirects
+    caddy.ingress/permanent-redirect: ""   # leave blank — handled per-path below
+    # Large file uploads
+    caddy.ingress/proxy-body-size: "10G"
+    caddy.ingress/proxy-read-timeout: "3600"
+    caddy.ingress/proxy-send-timeout: "3600"
+  tls:
+    - secretName: ""   # unused — cert-manager CSI handles TLS at the Caddy level
+      hosts:
+        - nextcloud.example.com
+
+# Nextcloud needs these .well-known paths redirected to the correct locations.
+# Add them as additional Ingress resources or via the chart's built-in paths:
+nginx:
+  enabled: false   # disable the bundled nginx — Caddy is the ingress
+
+resources:
+  requests:
+    memory: 512Mi
+    cpu: 500m

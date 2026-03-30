@@ -1,0 +1,33 @@
+# ── Mail server L4 passthrough (SMTP / IMAP / IMAPS) ─────────────────────────
+# Layer 4 TCP passthrough for mail protocols. PROXY protocol v2 forwards the
+# real client IP to the backend (Mailu, Postfix, Dovecot, etc.).
+# These ports must be open on your nodes / firewall.
+#
+# Combine with baremetal.yaml or loadbalancer.yaml:
+#   helm install caddy caddy-custom/caddy -n caddy --create-namespace \
+#     -f baremetal.yaml -f mail.yaml
+
+l4:
+  enabled: true
+  hostPorts:
+    - port: 25
+      protocol: TCP
+    - port: 465
+      protocol: TCP
+    - port: 587
+      protocol: TCP
+    - port: 993
+      protocol: TCP
+  routes:
+    - address: ":25"
+      upstream: "tcp/mailu-front.mail.svc.cluster.local:25"
+      proxyProtocol: v2
+    - address: ":465"
+      upstream: "tcp/mailu-front.mail.svc.cluster.local:465"
+      proxyProtocol: v2
+    - address: ":587"
+      upstream: "tcp/mailu-front.mail.svc.cluster.local:587"
+      proxyProtocol: v2
+    - address: ":993"
+      upstream: "tcp/mailu-front.mail.svc.cluster.local:993"
+      proxyProtocol: v2

@@ -1,0 +1,34 @@
+# ── Mailu ─────────────────────────────────────────────────────────────────────
+# Helm chart: https://github.com/Mailu/helm-charts
+#
+#   helm repo add mailu https://mailu.github.io/helm-charts
+#   helm install mailu mailu/mailu -n mail --create-namespace -f mailu.yaml
+#
+# Prerequisites:
+# - Caddy deployed with mail.yaml (L4 passthrough for SMTP/IMAP)
+# - Mailu's front container accepts PROXY protocol v2
+
+domain: example.com
+hostnames:
+  - mail.example.com
+
+ingress:
+  enabled: true
+  className: caddy-custom
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+    # Mailu's front is nginx — send real client IP via headers
+    caddy.ingress/backend-protocol: "HTTPS"
+    caddy.ingress/backend-tls-insecure-skip-verify: "true"
+  tls:
+    - hosts:
+        - mail.example.com
+
+# Disable Mailu's own cert management — Caddy handles TLS
+certmanager:
+  enabled: false
+
+# Tell Mailu that Caddy is the front proxy so it uses X-Forwarded-For
+front:
+  # PROXY protocol support — must match what caddy l4 sends (proxyProtocol: v2)
+  proxyProtocol: true

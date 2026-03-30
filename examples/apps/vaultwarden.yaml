@@ -1,0 +1,20 @@
+# ── Vaultwarden (Bitwarden-compatible) ────────────────────────────────────────
+# Helm chart: https://github.com/guerzon/vaultwarden
+#
+#   helm repo add vaultwarden https://guerzon.github.io/vaultwarden
+#   helm install vaultwarden vaultwarden/vaultwarden -n vaultwarden --create-namespace \
+#     -f vaultwarden.yaml
+
+domain: "https://vault.example.com"
+
+ingress:
+  enabled: true
+  className: caddy-custom
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+    # WebSocket support for live sync
+    caddy.ingress/proxy-http-version: "1.1"
+  nginxIngressAnnotations: false
+  hostname: vault.example.com
+  tls: false   # TLS terminated at Caddy
+  tlsSecret: ""

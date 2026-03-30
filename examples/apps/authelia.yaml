@@ -1,0 +1,36 @@
+# ── Authelia ──────────────────────────────────────────────────────────────────
+# Helm chart: https://github.com/authelia/chartrepo
+#
+#   helm repo add authelia https://charts.authelia.com
+#   helm install authelia authelia/authelia -n authelia --create-namespace \
+#     -f authelia.yaml
+#
+# After deploying Authelia, enable forward auth in caddy values:
+#
+#   forwardAuth:
+#     enabled: true
+#     url: http://authelia.authelia.svc.cluster.local:9091
+#     uri: /api/authz/forward-auth
+#     copyHeaders:
+#       - Remote-User
+#       - Remote-Groups
+#       - Remote-Email
+#       - Remote-Name
+#
+# Then add `import security` to route files to protect apps.
+
+domain: example.com
+
+ingress:
+  enabled: true
+  className: caddy-custom
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+  subdomain: auth   # → auth.example.com
+  tls:
+    enabled: false   # TLS at Caddy level
+
+configMap:
+  default_redirection_url: "https://auth.example.com"
+  session:
+    domain: example.com

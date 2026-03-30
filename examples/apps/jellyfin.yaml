@@ -1,0 +1,25 @@
+# ── Jellyfin ──────────────────────────────────────────────────────────────────
+# Helm chart: https://github.com/jellyfin/jellyfin-helm
+#
+#   helm repo add jellyfin https://jellyfin.github.io/jellyfin-helm
+#   helm install jellyfin jellyfin/jellyfin -n jellyfin --create-namespace \
+#     -f jellyfin.yaml
+
+ingress:
+  enabled: true
+  ingressClassName: caddy-custom
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+    # Streaming needs HTTP/1.1 and generous timeouts
+    caddy.ingress/proxy-http-version: "1.1"
+    caddy.ingress/proxy-read-timeout: "3600"
+    caddy.ingress/proxy-send-timeout: "3600"
+    caddy.ingress/proxy-body-size: "0"   # unlimited for media uploads
+  hosts:
+    - host: jellyfin.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - jellyfin.example.com

@@ -1,0 +1,24 @@
+# ── Grafana ───────────────────────────────────────────────────────────────────
+# Helm chart: https://github.com/grafana/helm-charts
+#
+#   helm repo add grafana https://grafana.github.io/helm-charts
+#   helm install grafana grafana/grafana -n monitoring --create-namespace -f grafana.yaml
+
+ingress:
+  enabled: true
+  ingressClassName: caddy-custom
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+  hosts:
+    - grafana.example.com
+  tls:
+    - hosts:
+        - grafana.example.com
+
+grafana.ini:
+  server:
+    domain: grafana.example.com
+    root_url: https://grafana.example.com
+
+adminUser: admin
+adminPassword: ""   # set via existingSecret in production

@@ -1,0 +1,49 @@
+# ── AzuraCast ─────────────────────────────────────────────────────────────────
+# AzuraCast doesn't have an official Helm chart. Use a Deployment + Service
+# and create Ingress resources manually, or patch an unofficial chart.
+#
+# Key requirements:
+# - HTTP/1.1 for Icecast/HLS streaming endpoints
+# - Large body size for music uploads
+# - L4 passthrough for raw Icecast listeners on port 8000/8005 (optional —
+#   only needed if clients connect directly to the stream port)
+
+# ── Web UI ingress ─────────────────────────────────────────────────────────────
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: azuracast
+  namespace: azuracast
+  annotations:
+    caddy.ingress/ssl-redirect: "true"
+    caddy.ingress/proxy-body-size: "2G"       # music library uploads
+    caddy.ingress/proxy-read-timeout: "3600"
+    caddy.ingress/proxy-send-timeout: "3600"
+    caddy.ingress/proxy-http-version: "1.1"   # required for HLS streaming
+spec:
+  ingressClassName: caddy-custom
+  rules:
+    - host: radio.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: azuracast
+                port:
+                  number: 80
+
+# ── L4 Icecast passthrough (add to caddy mail.yaml / full.yaml) ────────────────
+# l4:
+#   hostPorts:
+#     - port: 8000
+#       protocol: TCP
+#     - port: 8005
+#       protocol: TCP
+#   routes:
+#     - address: ":8000"
+#       upstream: "tcp/azuracast.azuracast.svc.cluster.local:8000"
+#     - address: ":8005"
+#       upstream: "tcp/azuracast.azuracast.svc.cluster.local:8005"
