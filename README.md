@@ -3,7 +3,11 @@
 > **Status: working, not yet battle-tested.**
 > Core functionality is operational and runs in a personal k3s cluster, but this project is still early. More real-world testing, edge case coverage, and community feedback is needed before it can be considered stable for general use. Contributions and issue reports are very welcome.
 
-A custom [Caddy](https://caddyserver.com) image for Kubernetes, built to replace Traefik or nginx-ingress. Handles TLS via cert-manager CSI and ships with a Helm chart that makes every feature toggleable.
+A custom [Caddy](https://caddyserver.com) image for Kubernetes, built to replace Traefik or nginx-ingress. Ships with a Helm chart that makes every feature toggleable.
+
+TLS is handled by your choice of backend:
+- **CertMagic** (built-in) — Caddy issues and renews certificates automatically via ACME (HTTP-01, TLS-ALPN-01, or DNS-01). Certs stored in Kubernetes Secrets, Redis, or on disk. No external dependencies.
+- **cert-manager CSI** — certificates are provisioned by cert-manager and mounted as files. Caddy detects rotation via fsnotify with no restart needed.
 
 Includes a built-in Kubernetes Ingress controller — apps set `ingressClassName: caddy-custom` and routes appear in Caddy automatically, no manual config editing required.
 
@@ -79,7 +83,7 @@ Internet ──80/443─▶  LoadBalancer (MetalLB / cloud) │
                   └─────────────────────────────────┘
 ```
 
-TLS is handled by [cert-manager CSI driver](https://cert-manager.io/docs/usage/csi-driver/) — certs are mounted as real files and Caddy's fsnotify detects rotation natively. No sidecar, no restart needed.
+TLS is handled by CertMagic (built-in ACME, certs stored in Kubernetes Secrets or Redis) or [cert-manager CSI](https://cert-manager.io/docs/usage/csi-driver/) (certs mounted as files, rotation detected via fsnotify). See the [TLS section](#tls) for full options.
 
 ---
 
