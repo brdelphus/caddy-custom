@@ -21,7 +21,7 @@ RUN set -eux; \
     --with github.com/hslatman/caddy-crowdsec-bouncer@v0.10.1 \
     --with pkg.jsn.cam/caddy-defender=github.com/jasonlovesdoggo/caddy-defender@v0.10.0 \
     --with github.com/brdelphus/caddy-k8s \
-    --with github.com/PalmStoneGames/caddy-kubernetes-storage \
+    --with github.com/brdelphus/caddy-kubernetes-storage \
     --with github.com/pberkel/caddy-storage-redis \
     ${DNS_PROVIDER:+--with ${DNS_PROVIDER}}
 
