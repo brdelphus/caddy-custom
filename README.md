@@ -271,6 +271,7 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/whitelist-source-range` | CIDRs to allow; all others 403 |
 | `caddy.ingress/blocklist-source-range` | CIDRs to deny; all others pass |
 | `caddy.ingress/basic-auth-secret` | Secret with `auth` htpasswd key |
+| `caddy.ingress/plain-http: "true"` | Serve on port 80 (HTTP only). Use for internal/non-resolvable hostnames |
 
 Full annotation reference and examples: [caddy-k8s](https://github.com/brdelphus/caddy-k8s#annotations)
 
