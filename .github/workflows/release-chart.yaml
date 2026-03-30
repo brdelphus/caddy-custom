@@ -27,9 +27,67 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
 
+      - name: Generate release notes
+        run: |
+          CHART_NAME=$(grep '^name:' helm/Chart.yaml | awk '{print $2}')
+          CHART_VERSION=$(grep '^version:' helm/Chart.yaml | awk '{print $2}')
+          CURRENT_TAG="${CHART_NAME}-${CHART_VERSION}"
+
+          # Find the previous release tag for this chart
+          PREV_TAG=$(git tag -l "${CHART_NAME}-*" --sort=-v:refname | grep -v "^${CURRENT_TAG}$" | head -1)
+
+          {
+            echo "## What's Changed"
+            echo ""
+
+            if [ -n "$PREV_TAG" ]; then
+              RANGE="${PREV_TAG}..HEAD"
+            else
+              RANGE="HEAD"
+            fi
+
+            # Group commits by type
+            FEATURES=$(git log $RANGE --pretty=format:"%s|%h" -- helm/ | grep -iE "^feat" | sed 's/|/ (/' | sed 's/$/)/')
+            FIXES=$(git log $RANGE --pretty=format:"%s|%h" -- helm/ | grep -iE "^fix" | sed 's/|/ (/' | sed 's/$/)/')
+            DOCS=$(git log $RANGE --pretty=format:"%s|%h" -- helm/ | grep -iE "^docs" | sed 's/|/ (/' | sed 's/$/)/')
+            OTHER=$(git log $RANGE --pretty=format:"%s|%h" -- helm/ | grep -ivE "^(feat|fix|docs)" | sed 's/|/ (/' | sed 's/$/)/')
+
+            if [ -n "$FEATURES" ]; then
+              echo "### Features"
+              echo "$FEATURES" | sed 's/^/- /'
+              echo ""
+            fi
+
+            if [ -n "$FIXES" ]; then
+              echo "### Bug Fixes"
+              echo "$FIXES" | sed 's/^/- /'
+              echo ""
+            fi
+
+            if [ -n "$DOCS" ]; then
+              echo "### Documentation"
+              echo "$DOCS" | sed 's/^/- /'
+              echo ""
+            fi
+
+            if [ -n "$OTHER" ]; then
+              echo "### Other"
+              echo "$OTHER" | sed 's/^/- /'
+              echo ""
+            fi
+
+            if [ -n "$PREV_TAG" ]; then
+              echo "**Full diff:** [\`${PREV_TAG}...${CURRENT_TAG}\`](https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${CURRENT_TAG})"
+            fi
+          } > helm/release-notes.md
+
+          echo "--- Generated release notes ---"
+          cat helm/release-notes.md
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.7.0
         with:
           charts_dir: .   # finds helm/ as a chart directory (contains Chart.yaml)
+          release_notes_file: release-notes.md
         env:
           CR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
