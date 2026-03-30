@@ -295,12 +295,6 @@ Images are built on GitHub Actions using native runners (no QEMU):
 
 Both jobs build simultaneously, then a merge job creates the multi-arch manifest.
 
-Trigger a manual build with push:
-
-```bash
-gh workflow run build.yaml --repo brdelphus/caddy-custom -f push=true
-```
-
 Tags pushed on every merge to `main`:
 - `latest`
 - `2.11.2` (Caddy version from Dockerfile)
