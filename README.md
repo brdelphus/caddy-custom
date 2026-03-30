@@ -189,6 +189,12 @@ ingress:
 
 Routes appear in Caddy within seconds — no restart, no manual Caddyfile editing.
 
+**HTTPS is automatic.** There is no need to set `spec.tls` on Ingress resources. TLS is handled globally:
+- With CertMagic, Caddy auto-issues and renews a certificate for every hostname it sees in Ingress rules.
+- With cert-manager CSI, a wildcard certificate is mounted into the pod and covers all hostnames.
+
+Per-route behaviour (redirects, auth, CORS, rate limiting, etc.) is controlled via annotations — see the [annotation reference](#kubernetes-ingress-controller).
+
 See [`examples/`](examples/) for ready-to-use values files for common apps (Nextcloud, Mailu, Gitea, Grafana, Jellyfin, Vaultwarden, Authelia, AzuraCast).
 
 ---
