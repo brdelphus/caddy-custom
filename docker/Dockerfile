@@ -17,8 +17,8 @@ RUN xcaddy build \
     --with github.com/porech/caddy-maxmind-geolocation@v1.0.1 \
     # CrowdSec IP reputation + AppSec (targets Caddy v2.10.2, compat with v2.11.2)
     --with github.com/hslatman/caddy-crowdsec-bouncer@v0.10.1 \
-    # AI scraper / cloud IP blocker (targets Caddy v2.10.2, compat with v2.11.2)
-    --with github.com/jasonlovesdoggo/caddy-defender@v0.10.0
+    # AI scraper / cloud IP blocker — module path differs from GitHub repo path
+    --with pkg.jsn.cam/caddy-defender=github.com/jasonlovesdoggo/caddy-defender@v0.10.0
 
 FROM caddy:2.11.2
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
