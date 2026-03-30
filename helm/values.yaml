@@ -123,8 +123,8 @@ tls:
     issuerKind: ClusterIssuer
     # All domains this Caddy instance will serve TLS for
     dnsNames: []
-    # - "*.delphus.org"
-    # - "delphus.org"
+    # - "*.example.com"
+    # - "example.com"
     certFile: tls.crt
     keyFile: tls.key
 

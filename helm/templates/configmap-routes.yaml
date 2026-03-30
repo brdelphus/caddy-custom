@@ -16,7 +16,7 @@ data:
   # Example — Ghost blog:
   #
   # blog.caddy: |
-  #   blog.delphus.org {
+  #   blog.example.com {
   #     tls {{ include "caddy.tlsCertPath" . }} {{ include "caddy.tlsKeyPath" . }}
   #     import security
   #     import upstream ghost.blog.svc.cluster.local:2368
@@ -25,7 +25,7 @@ data:
   # Example — Nextcloud (with .well-known and DAV headers):
   #
   # nextcloud.caddy: |
-  #   dav.delphus.org {
+  #   cloud.example.com {
   #     tls {{ include "caddy.tlsCertPath" . }} {{ include "caddy.tlsKeyPath" . }}
   #     import security
   #     redir /.well-known/carddav /remote.php/dav 301
@@ -41,7 +41,7 @@ data:
   # Example — Mailu webmail/admin (HTTP only, real-IP for nginx backend):
   #
   # mailu.caddy: |
-  #   mail.delphus.org {
+  #   mail.example.com {
   #     tls {{ include "caddy.tlsCertPath" . }} {{ include "caddy.tlsKeyPath" . }}
   #     import security
   #     import upstream mailu-front.mail.svc.cluster.local:80
@@ -50,7 +50,7 @@ data:
   # Example — Grafana:
   #
   # grafana.caddy: |
-  #   graphadm.delphus.org {
+  #   grafana.example.com {
   #     tls {{ include "caddy.tlsCertPath" . }} {{ include "caddy.tlsKeyPath" . }}
   #     import security
   #     import upstream grafana.monitoring.svc.cluster.local:3000
@@ -59,7 +59,7 @@ data:
   # Example — AzuraCast (web UI only; streaming TCP handled by L4 in values.yaml):
   #
   # azuracast.caddy: |
-  #   cast.delphus.org {
+  #   cast.example.com {
   #     tls {{ include "caddy.tlsCertPath" . }} {{ include "caddy.tlsKeyPath" . }}
   #     import security
   #     import upstream azuracast.azuracast.svc.cluster.local:80
