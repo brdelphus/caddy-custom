@@ -15,6 +15,8 @@ Supports two deployment modes:
 - **DaemonSet + hostPorts** — runs on every node, binds ports directly. Ideal for bare-metal k3s.
 - **Deployment + LoadBalancer** — fixed replica count behind MetalLB or a cloud LB (AWS NLB, GCE, etc.).
 
+Created after migrating from ingress-nginx (deprecated) to Traefik, finding Traefik lacking, discovering Caddy, and realising there was no proper Kubernetes ingress support for it — so I built one.
+
 **Image:** `ghcr.io/brdelphus/caddy-custom`
 
 ---
