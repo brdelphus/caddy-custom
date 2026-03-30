@@ -149,6 +149,11 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/proxy-next-upstream-tries` | Retry failed upstream requests N times |
 | `caddy.ingress/proxy-read-timeout` / `proxy-send-timeout` / `proxy-connect-timeout` | Per-route proxy timeouts (seconds) |
 | `caddy.ingress/proxy-body-size` | Max request body size (`0` = unlimited) |
+| `caddy.ingress/enable-cors: "true"` | Enable CORS (preflight OPTIONS handled automatically) |
+| `caddy.ingress/cors-allow-origin` | `*` or comma-separated specific origins |
+| `caddy.ingress/cors-allow-methods` / `cors-allow-headers` / `cors-expose-headers` | CORS header overrides |
+| `caddy.ingress/cors-allow-credentials: "true"` | Allow credentials (incompatible with `*` origin) |
+| `caddy.ingress/cors-max-age` | Preflight cache duration in seconds |
 | `caddy.ingress/limit-rps` | Max requests/second per client IP |
 | `caddy.ingress/waf: "off"\|"on"\|"detection"` | Per-route WAF override |
 | `caddy.ingress/whitelist-source-range` | CIDRs to allow; all others 403 |
