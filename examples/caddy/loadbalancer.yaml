@@ -43,8 +43,12 @@ tls:
     issuerName: letsencrypt-prod
     issuerKind: ClusterIssuer
 
-# configReloader is enabled by default — Caddyfile changes hot-reload via admin API,
-# no pod restart needed. No external dependencies required.
+# ── Config hot-reload ─────────────────────────────────────────────────────────
+# Built-in — no Stakater Reloader needed. Watches the Caddyfile ConfigMap and
+# calls POST /load on Caddy's admin API when it changes. Zero pod restarts.
+
+configReloader:
+  enabled: true
 
 # Option B: CertMagic built-in ACME
 # For multi-replica Deployments use redis storage so all pods share cert state.
