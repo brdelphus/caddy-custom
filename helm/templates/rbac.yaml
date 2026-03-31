@@ -52,9 +52,10 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     {{- if and .Values.tls.acme.enabled (eq .Values.tls.acme.storage "kubernetes") }}
-    verbs: ["get", "list", "create", "update", "delete"]
+    verbs: ["get", "list", "watch", "create", "update", "delete"]
     {{- else }}
-    verbs: ["get"]
+    # spec.tls support requires list/watch to monitor TLS secret updates
+    verbs: ["get", "list", "watch"]
     {{- end }}
   - apiGroups: [""]
     resources: ["events"]
