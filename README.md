@@ -241,6 +241,8 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/tls-ondemand: "true"` | Issue cert on first TLS connection instead of proactively (certmagic only) |
 | `caddy.ingress/tls-ca: "https://..."` | ACME CA URL for this Ingress, e.g. ZeroSSL (certmagic only) |
 | `caddy.ingress/tls-ca-secret: "<name>"` | K8s Secret (same namespace) with EAB keys `key_id` and `mac_key` for the CA above |
+| `caddy.ingress/request-headers: "Key=Val,-Del"` | Set/delete headers on upstream requests. Caddy placeholders allowed. |
+| `caddy.ingress/response-headers: "Key=Val,-Del"` | Set/delete headers on client responses. Runs after security headers. |
 | `caddy.ingress/ssl-redirect: "true"` | Redirect HTTP → HTTPS with 301 |
 | `caddy.ingress/permanent-redirect: "https://..."` | 301-redirect all paths to a fixed URL |
 | `caddy.ingress/temporal-redirect: "https://..."` | 302-redirect all paths to a fixed URL |

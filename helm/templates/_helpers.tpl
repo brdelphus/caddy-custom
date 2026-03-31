@@ -163,6 +163,7 @@ Generate the Caddyfile content
       {{- end }}
     }
     {{- end }}
+    access_log {{ if .Values.k8sIngress.accessLog }}on{{ else }}off{{ end }}
   }
 
   {{- if .Values.plugins.security.enabled }}

@@ -554,6 +554,11 @@ k8sIngress:
     # Inject X-Real-IP + X-Forwarded-* to upstream — required by Mailu / nginx backends
     injectRealIP: true
 
+  # ── Access logging ───────────────────────────────────────────────────────────────
+  # When enabled, Caddy writes one JSON access log line per request to stderr.
+  # Individual Ingresses can suppress logging via caddy.ingress/access-log: "false".
+  accessLog: false
+
 # ── Bundled Redis (optional) ───────────────────────────────────────────────────
 # When enabled, deploys a Redis pod alongside Caddy using the Bitnami Redis
 # sub-chart. caddy-k8s will automatically use it to persist the Ingress →
