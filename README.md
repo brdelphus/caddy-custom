@@ -133,7 +133,6 @@ helm install caddy ./helm \
 
 ```yaml
 k8sIngress:
-  enabled: true
   ingressClass: caddy-custom
 
 realIP:
@@ -146,26 +145,41 @@ TLS is configured per Ingress via `spec.tls` — no global TLS backend needed. S
 
 ### 4. Point your apps at Caddy
 
-In any Helm chart that creates an `Ingress` resource:
+Create an `Ingress` resource pointing at your service. Add `spec.tls` to serve HTTPS and declare which TLS handler manages the cert:
 
 ```yaml
-ingress:
-  enabled: true
-  className: caddy-custom
-  hosts:
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  namespace: myapp
+  annotations:
+    caddy.ingress/tls: cert-manager          # cert-manager provisions the Secret
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  ingressClassName: caddy-custom
+  tls:
+    - hosts:
+        - app.example.com
+      secretName: myapp-tls                  # cert-manager creates this
+  rules:
     - host: app.example.com
-      paths:
-        - path: /
-          pathType: Prefix
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: myapp
+                port:
+                  number: 8080
 ```
 
 Routes appear in Caddy within seconds — no restart, no manual Caddyfile editing.
 
-**TLS is opt-in per Ingress.** `spec.tls` is always required to enable HTTPS. The `caddy.ingress/tls` annotation declares which handler manages the certificate:
-
-- `caddy.ingress/tls: certmagic` — CertMagic issues the cert via ACME. `spec.tls` with hosts, no `secretName`.
-- `caddy.ingress/tls: cert-manager` — cert-manager creates the Secret in `spec.tls.secretName`. caddy-k8s loads it.
-- No `spec.tls` — plain HTTP.
+- No `spec.tls` → plain HTTP.
+- `caddy.ingress/tls: certmagic` → CertMagic issues the cert via ACME (`spec.tls` with hosts, no `secretName`).
+- `caddy.ingress/tls: cert-manager` → cert-manager creates the Secret in `spec.tls.secretName`.
 
 Per-route behaviour (redirects, auth, CORS, rate limiting, etc.) is controlled via annotations — see the [annotation reference](#kubernetes-ingress-controller).
 
@@ -207,7 +221,6 @@ L4 ports declared in `l4.hostPorts` are automatically added to the LoadBalancer 
 
 ```yaml
 k8sIngress:
-  enabled: true
   ingressClass: caddy-custom   # matches spec.ingressClassName
   isDefaultClass: false        # set true to make this the cluster default
   security:
@@ -537,7 +550,6 @@ Watch Ingress resources only in specific namespace(s) — useful for multi-tenan
 
 ```yaml
 k8sIngress:
-  enabled: true
   watchNamespace: "production"   # empty = watch all namespaces (default)
 ```
 

@@ -5,7 +5,6 @@
 #   helm install caddy caddy-custom/caddy -n caddy --create-namespace -f full.yaml
 
 k8sIngress:
-  enabled: true
   ingressClass: caddy-custom
   isDefaultClass: false
   # Watch all namespaces (default). Set to specific namespace for multi-tenant.

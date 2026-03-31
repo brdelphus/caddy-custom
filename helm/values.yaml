@@ -532,7 +532,6 @@ reloader:
 # for HTTP services — just set ingressClassName: caddy-custom in your charts.
 
 k8sIngress:
-  enabled: true
   # IngressClass name — must match spec.ingressClassName in your Ingress resources
   ingressClass: caddy-custom
   # Set true to make this the cluster-wide default IngressClass

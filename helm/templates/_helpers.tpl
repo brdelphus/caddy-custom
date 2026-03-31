@@ -144,7 +144,6 @@ Generate the Caddyfile content
   {{- end }}
   {{- end }}
 
-  {{- if .Values.k8sIngress.enabled }}
   k8s_ingress {
     ingress_class {{ .Values.k8sIngress.ingressClass }}
     {{- if .Values.k8sIngress.watchNamespace }}
@@ -165,7 +164,6 @@ Generate the Caddyfile content
     }
     {{- end }}
   }
-  {{- end }}
 
   {{- if .Values.plugins.security.enabled }}
   order authenticate before respond

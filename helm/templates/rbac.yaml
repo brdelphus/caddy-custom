@@ -28,7 +28,6 @@ subjects:
     name: {{ include "caddy.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 {{- end }}
-{{- if .Values.k8sIngress.enabled }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -75,4 +74,3 @@ subjects:
   - kind: ServiceAccount
     name: {{ include "caddy.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
-{{- end }}
