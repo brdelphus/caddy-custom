@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.8.0] - 2026-03-31
+
+### New Features
+
+- **HTTP access logging** — enable server-wide access logging with `k8sIngress.accessLog: true` in Helm values (or `access_log on` in the Caddyfile). Logs are written to stderr in JSON format. Requires the Caddy logging subsystem to be initialised; caddy-k8s sets this up automatically on startup.
+- **Per-Ingress access log opt-out** (`caddy.ingress/access-log: "false"`) — suppress access logs for specific Ingresses while keeping global logging enabled. Caddy's `skip_hosts` is rebuilt incrementally as Ingresses are added or removed.
+- **Per-Ingress request header manipulation** (`caddy.ingress/request-headers`) — set or delete HTTP request headers before they are forwarded upstream. Format: `Header=Value,-DeleteMe`. Caddy placeholders (e.g. `{client_ip}`) are supported.
+- **Per-Ingress response header manipulation** (`caddy.ingress/response-headers`) — set or delete HTTP response headers before they reach the client. Runs after global security headers, so per-Ingress annotations can override them.
+
+### Helm
+
+- New value `k8sIngress.accessLog` (default `false`) — controls `access_log on/off` in the `k8s_ingress` Caddyfile block.
+
+---
+
 ## [0.7.0] - 2026-03-31
 
 ### Breaking Changes
