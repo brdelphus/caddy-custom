@@ -1,7 +1,8 @@
 # ── CertMagic built-in ACME ───────────────────────────────────────────────────
 # Caddy issues and renews certificates automatically via ACME. No cert-manager
-# needed — Caddy discovers hostnames from Ingress rules and issues certs on
-# first request.
+# needed — Caddy discovers hostnames from Ingress routes and issues certs
+# proactively (within seconds of the Ingress being created, before any client
+# connects). For lazy issuance on first connection see ondemand-tls.yaml.
 #
 # Ingresses must have spec.tls to be routed to the HTTPS server (port 443).
 # Leave secretName empty — caddy-k8s will not try to load a cert from a Secret;

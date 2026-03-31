@@ -178,8 +178,8 @@ spec:
 Routes appear in Caddy within seconds — no restart, no manual Caddyfile editing.
 
 - No `spec.tls` → plain HTTP.
-- `caddy.ingress/tls: certmagic` → CertMagic issues the cert via ACME (`spec.tls` with hosts, no `secretName`).
-- `caddy.ingress/tls: cert-manager` → cert-manager creates the Secret in `spec.tls.secretName`.
+- `caddy.ingress/tls: certmagic` → CertMagic issues the cert proactively via ACME as soon as the Ingress is created (`spec.tls` with hosts, no `secretName`).
+- `caddy.ingress/tls: cert-manager` → cert-manager creates the Secret in `spec.tls.secretName`; caddy-k8s loads it.
 
 Per-route behaviour (redirects, auth, CORS, rate limiting, etc.) is controlled via annotations — see the [annotation reference](#kubernetes-ingress-controller).
 
