@@ -224,11 +224,13 @@ k8sIngress:
   ingressClass: caddy-custom   # matches spec.ingressClassName
   isDefaultClass: false        # set true to make this the cluster default
   security:
-    waf: false                 # Coraza WAF per route (on | off)
+    waf: false                 # inject Coraza WAF handler into every Ingress route (requires plugins.coraza.enabled: true)
     wafMode: Detection         # Detection (log only) | On (block)
     securityHeaders: true      # HSTS, X-Content-Type-Options, X-Frame-Options, etc.
     injectRealIP: true         # X-Real-IP + X-Forwarded-* to upstream
 ```
+
+`k8sIngress.security.waf` controls whether the WAF handler is injected into each auto-generated route. To actually enable WAF, you also need `plugins.coraza.enabled: true` which loads the Coraza module and configures the ruleset — see the [WAF section](#waf-coraza--owasp-crs).
 
 Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individual Ingress resources:
 
@@ -299,6 +301,10 @@ When enabled, Helm upgrades that modify the Caddyfile will no longer cause a rol
 
 ### WAF (Coraza / OWASP CRS)
 
+`plugins.coraza` loads the Coraza module and configures the OWASP ruleset — this is always required if WAF is used anywhere. `k8sIngress.security.waf` sets the default for every Ingress route; the `caddy.ingress/waf` annotation overrides it per-Ingress.
+
+**WAF on all routes, opt-out per Ingress:**
+
 ```yaml
 plugins:
   coraza:
@@ -306,6 +312,36 @@ plugins:
     ruleEngine: DetectionOnly   # DetectionOnly | On | Off
     customRules: []
     # - "SecRule REQUEST_URI \"@contains /wp-admin\" \"id:9001,phase:1,deny,status:403\""
+
+k8sIngress:
+  security:
+    waf: true
+    wafMode: Detection
+```
+
+```yaml
+# Disable WAF for this specific Ingress
+metadata:
+  annotations:
+    caddy.ingress/waf: "off"
+```
+
+**WAF on one specific Ingress only:**
+
+```yaml
+plugins:
+  coraza:
+    enabled: true
+    ruleEngine: DetectionOnly
+
+k8sIngress:
+  security:
+    waf: false   # off by default
+
+# Enable WAF only on this Ingress
+metadata:
+  annotations:
+    caddy.ingress/waf: "on"
 ```
 
 ### CrowdSec
@@ -493,12 +529,15 @@ kind: Ingress
 metadata:
   name: myapp
   namespace: myapp
+  annotations:
+    caddy.ingress/tls: cert-manager               # cert-manager provisions the Secret
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: caddy-custom
   tls:
     - hosts:
         - app.example.com
-      secretName: myapp-tls   # must be type kubernetes.io/tls
+      secretName: myapp-tls                       # cert-manager creates this in namespace myapp
   rules:
     - host: app.example.com
       http:
@@ -512,7 +551,7 @@ spec:
                   number: 8080
 ```
 
-The secret must exist in the **same namespace as the Ingress**. Secrets can be created manually or managed by cert-manager — create the `Certificate` resource in the Ingress namespace and point `spec.secretName` to the same name.
+The Secret must exist in the **same namespace as the Ingress**. Use `caddy.ingress/tls: certmagic` instead to let CertMagic issue the cert via ACME — omit `secretName` in that case. See [`examples/caddy/cert-manager.yaml`](examples/caddy/cert-manager.yaml) and [`examples/caddy/certmagic.yaml`](examples/caddy/certmagic.yaml).
 
 ### Forward auth (Authelia / authentik)
 
