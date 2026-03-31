@@ -3,6 +3,9 @@
 # externalTrafficPolicy: Local preserves the real client IP and avoids
 # an extra kube-proxy hop. Disable hostPorts to avoid conflicts.
 #
+# TLS is configured per Ingress via spec.tls — see cert-manager.yaml for how to
+# provision certificates, or certmagic.yaml for CertMagic-based issuance.
+#
 # Usage:
 #   helm install caddy caddy-custom/caddy -n caddy --create-namespace -f loadbalancer.yaml
 
@@ -33,16 +36,6 @@ service:
   # annotations:
   #   cloud.google.com/load-balancer-type: Internal
 
-# ── TLS — choose one ──────────────────────────────────────────────────────────
-
-# Option A: cert-manager CSI
-# Caddy detects cert rotation via fsnotify — no restart needed.
-tls:
-  certManagerCSI:
-    enabled: true
-    issuerName: letsencrypt-prod
-    issuerKind: ClusterIssuer
-
 # ── Config hot-reload ─────────────────────────────────────────────────────────
 # Built-in — no Stakater Reloader needed. Watches the Caddyfile ConfigMap and
 # calls POST /load on Caddy's admin API when it changes. Zero pod restarts.
@@ -50,16 +43,9 @@ tls:
 configReloader:
   enabled: true
 
-# Option B: CertMagic built-in ACME
-# For multi-replica Deployments use redis storage so all pods share cert state.
-# tls:
-#   certManagerCSI:
-#     enabled: false
-#   acme:
-#     enabled: true
-#     email: admin@example.com
-#     challenge: http
-#     storage: redis   # shared across replicas via bundled Redis
+# ── Redis (recommended for multi-replica) ─────────────────────────────────────
+# Persists the Ingress → route ID map across Caddy restarts so stale routes
+# don't accumulate. With multiple replicas, all pods share the same state.
 #
 # redis:
 #   enabled: true

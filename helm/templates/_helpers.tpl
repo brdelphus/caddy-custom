@@ -329,11 +329,6 @@ Generate the Caddyfile content
   {{- end }}
 }
 
-# ── HTTP → HTTPS redirect ───────────────────────────────────────────────────────
-:80 {
-  redir https://{host}{uri} permanent
-}
-
 # ── Reusable security snippet ───────────────────────────────────────────────────
 # Usage in route files:  import security
 (security) {

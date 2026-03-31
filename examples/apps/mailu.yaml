@@ -16,6 +16,7 @@ ingress:
   enabled: true
   className: caddy-custom
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
     # Mailu's front is nginx — send real client IP via headers
     caddy.ingress/backend-protocol: "HTTPS"
@@ -23,6 +24,7 @@ ingress:
   tls:
     - hosts:
         - mail.example.com
+      secretName: mail-tls   # cert-manager creates this Secret in namespace mail
 
 # Disable Mailu's own cert management — Caddy handles TLS
 certmanager:

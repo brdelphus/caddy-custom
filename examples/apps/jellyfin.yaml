@@ -9,6 +9,7 @@ ingress:
   enabled: true
   ingressClassName: caddy-custom
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
     # Streaming needs HTTP/1.1 and generous timeouts
     caddy.ingress/proxy-http-version: "1.1"
@@ -23,3 +24,4 @@ ingress:
   tls:
     - hosts:
         - jellyfin.example.com
+      secretName: jellyfin-tls   # cert-manager creates this Secret in namespace jellyfin

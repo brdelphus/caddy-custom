@@ -8,13 +8,25 @@
 | [caddy/loadbalancer.yaml](caddy/loadbalancer.yaml) | Deployment + LoadBalancer for MetalLB / cloud |
 | [caddy/mail.yaml](caddy/mail.yaml) | L4 TCP passthrough for SMTP / IMAP (combine with the above) |
 | [caddy/full.yaml](caddy/full.yaml) | All optional plugins enabled (WAF, CrowdSec, GeoIP, etc.) |
+| [caddy/cert-manager.yaml](caddy/cert-manager.yaml) | TLS via cert-manager — Certificate CR + spec.tls Ingress pattern |
+| [caddy/certmagic.yaml](caddy/certmagic.yaml) | TLS via CertMagic built-in ACME (no cert-manager needed) |
+| [caddy/ondemand-tls.yaml](caddy/ondemand-tls.yaml) | CertMagic On-Demand TLS — issue certs dynamically on first request |
+| [caddy/zerossl.yaml](caddy/zerossl.yaml) | CertMagic with ZeroSSL / External Account Binding (EAB) |
 | [caddy/security.yaml](caddy/security.yaml) | Built-in authentication with caddy-security (OAuth2/OIDC/SAML) |
-| [caddy/ondemand-tls.yaml](caddy/ondemand-tls.yaml) | On-Demand TLS — issue certs dynamically on first request |
-| [caddy/zerossl.yaml](caddy/zerossl.yaml) | ZeroSSL with External Account Binding (EAB) |
 
 Combine files with multiple `-f` flags:
 
 ```bash
+# Bare-metal, certs via cert-manager
+helm install caddy caddy-custom/caddy -n caddy --create-namespace \
+  -f examples/caddy/baremetal.yaml
+# Then apply your ClusterIssuer + Certificate resources — see cert-manager.yaml
+
+# Bare-metal, certs via CertMagic built-in ACME (no cert-manager needed)
+helm install caddy caddy-custom/caddy -n caddy --create-namespace \
+  -f examples/caddy/baremetal.yaml \
+  -f examples/caddy/certmagic.yaml
+
 # Bare-metal with mail passthrough
 helm install caddy caddy-custom/caddy -n caddy --create-namespace \
   -f examples/caddy/baremetal.yaml \
@@ -25,12 +37,7 @@ helm install caddy caddy-custom/caddy -n caddy --create-namespace \
   -f examples/caddy/loadbalancer.yaml \
   -f examples/caddy/full.yaml
 
-# Bare-metal with built-in authentication (caddy-security)
-helm install caddy caddy-custom/caddy -n caddy --create-namespace \
-  -f examples/caddy/baremetal.yaml \
-  -f examples/caddy/security.yaml
-
-# On-Demand TLS (no cert-manager needed)
+# On-Demand TLS — issue certs dynamically on first request
 helm install caddy caddy-custom/caddy -n caddy --create-namespace \
   -f examples/caddy/baremetal.yaml \
   -f examples/caddy/ondemand-tls.yaml
@@ -75,38 +82,36 @@ helm install nextcloud nextcloud/nextcloud \
 > These examples are starting points — review and adjust hostnames, resource limits,
 > and storage settings for your environment before deploying.
 
-## New in v0.6.0
+## TLS quick reference
 
-### Built-in Authentication (caddy-security)
+### cert-manager (recommended)
+
+Issue and renew certs automatically. Each app gets its own `Certificate` resource pointing to a `kubernetes.io/tls` Secret. The Ingress `spec.tls.secretName` tells caddy-k8s which Secret to load. See [cert-manager.yaml](caddy/cert-manager.yaml) for the full pattern including ClusterIssuer, wildcard, and DNS-01 examples.
+
+### CertMagic built-in ACME
+
+No cert-manager needed. Configure CertMagic globally via [certmagic.yaml](caddy/certmagic.yaml) and set `spec.tls` on Ingresses without a `secretName` — CertMagic issues and manages the cert for each hostname automatically.
+
+### On-Demand TLS
+
+Issue certs dynamically on first request — no Certificate resources needed. See [ondemand-tls.yaml](caddy/ondemand-tls.yaml). Always configure the `ask` validation URL in production.
+
+### ZeroSSL / alternative ACME CAs
+
+Use ZeroSSL, Google Trust Services, or any EAB-capable CA instead of Let's Encrypt. See [zerossl.yaml](caddy/zerossl.yaml).
+
+## Built-in Authentication (caddy-security)
 
 Native SSO without external dependencies. See [security.yaml](caddy/security.yaml).
 
 ```bash
-# Create credentials secret
 kubectl create secret generic caddy-security-creds \
   --from-literal=GOOGLE_CLIENT_ID=xxx \
   --from-literal=GOOGLE_CLIENT_SECRET=xxx \
   --from-literal=JWT_SHARED_KEY=$(openssl rand -hex 32) \
   -n caddy
 
-# Deploy with authentication
 helm install caddy caddy-custom/caddy -n caddy --create-namespace \
   -f examples/caddy/baremetal.yaml \
   -f examples/caddy/security.yaml
 ```
-
-### On-Demand TLS
-
-Issue certificates dynamically on first request. See [ondemand-tls.yaml](caddy/ondemand-tls.yaml).
-
-### ZeroSSL / EAB
-
-Use alternative ACME CAs with External Account Binding. See [zerossl.yaml](caddy/zerossl.yaml).
-
-### Pod Disruption Budget
-
-Enabled by default in [full.yaml](caddy/full.yaml) for graceful upgrades.
-
-### Namespace Filtering
-
-Watch Ingress resources in specific namespace only — useful for multi-tenant clusters.

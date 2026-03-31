@@ -161,7 +161,11 @@ ingress:
 
 Routes appear in Caddy within seconds — no restart, no manual Caddyfile editing.
 
-**TLS is opt-in per Ingress.** Add a `spec.tls` block with a `secretName` to enable HTTPS for that Ingress — the caddy-k8s module loads the certificate from the Kubernetes Secret and pushes it to Caddy. Ingresses without `spec.tls` are served over HTTP only.
+**TLS is opt-in per Ingress.** `spec.tls` is always required to enable HTTPS. The `caddy.ingress/tls` annotation declares which handler manages the certificate:
+
+- `caddy.ingress/tls: certmagic` — CertMagic issues the cert via ACME. `spec.tls` with hosts, no `secretName`.
+- `caddy.ingress/tls: cert-manager` — cert-manager creates the Secret in `spec.tls.secretName`. caddy-k8s loads it.
+- No `spec.tls` — plain HTTP.
 
 Per-route behaviour (redirects, auth, CORS, rate limiting, etc.) is controlled via annotations — see the [annotation reference](#kubernetes-ingress-controller).
 
@@ -217,6 +221,8 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 
 | Annotation | Description |
 |---|---|
+| `caddy.ingress/tls: "certmagic"` | CertMagic issues the cert via ACME (`spec.tls` required, no `secretName`) |
+| `caddy.ingress/tls: "cert-manager"` | cert-manager provisions the cert into `spec.tls.secretName`; caddy-k8s loads it |
 | `caddy.ingress/ssl-redirect: "true"` | Redirect HTTP → HTTPS with 301 |
 | `caddy.ingress/permanent-redirect: "https://..."` | 301-redirect all paths to a fixed URL |
 | `caddy.ingress/temporal-redirect: "https://..."` | 302-redirect all paths to a fixed URL |
@@ -241,7 +247,6 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/whitelist-source-range` | CIDRs to allow; all others 403 |
 | `caddy.ingress/blocklist-source-range` | CIDRs to deny; all others pass |
 | `caddy.ingress/basic-auth-secret` | Secret with `auth` htpasswd key |
-| `caddy.ingress/plain-http: "true"` | Serve on port 80 (HTTP only). Use for internal/non-resolvable hostnames |
 
 Full annotation reference and examples: [caddy-k8s](https://github.com/brdelphus/caddy-k8s#annotations)
 
@@ -494,7 +499,7 @@ spec:
                   number: 8080
 ```
 
-Secrets can be created manually or managed by cert-manager — just point `spec.secretName` in the cert-manager `Certificate` resource to the same name.
+The secret must exist in the **same namespace as the Ingress**. Secrets can be created manually or managed by cert-manager — create the `Certificate` resource in the Ingress namespace and point `spec.secretName` to the same name.
 
 ### Forward auth (Authelia / authentik)
 
@@ -574,6 +579,10 @@ Ready-to-use values files are in [`examples/`](examples/):
 | [`caddy/loadbalancer.yaml`](examples/caddy/loadbalancer.yaml) | Deployment + LoadBalancer for MetalLB / cloud |
 | [`caddy/mail.yaml`](examples/caddy/mail.yaml) | L4 TCP passthrough for SMTP / IMAP (stack on top of either above) |
 | [`caddy/full.yaml`](examples/caddy/full.yaml) | All optional plugins enabled |
+| [`caddy/cert-manager.yaml`](examples/caddy/cert-manager.yaml) | TLS via cert-manager — ClusterIssuer + Certificate + spec.tls pattern |
+| [`caddy/certmagic.yaml`](examples/caddy/certmagic.yaml) | TLS via CertMagic built-in ACME (no cert-manager needed) |
+| [`caddy/ondemand-tls.yaml`](examples/caddy/ondemand-tls.yaml) | CertMagic On-Demand TLS — issue certs on first request |
+| [`caddy/zerossl.yaml`](examples/caddy/zerossl.yaml) | CertMagic with ZeroSSL / External Account Binding |
 | [`apps/nextcloud.yaml`](examples/apps/nextcloud.yaml) | Nextcloud values override |
 | [`apps/mailu.yaml`](examples/apps/mailu.yaml) | Mailu values override |
 | [`apps/gitea.yaml`](examples/apps/gitea.yaml) | Gitea values override |

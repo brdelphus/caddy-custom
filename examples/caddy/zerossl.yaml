@@ -2,9 +2,13 @@
 # Use ZeroSSL as your ACME CA instead of Let's Encrypt.
 # ZeroSSL offers 90-day certs with no rate limits and REST API access.
 #
+# Ingresses must have spec.tls to be routed to the HTTPS server (port 443).
+# Leave secretName empty — CertMagic issues the cert via ZeroSSL on first use.
+#
 # Usage:
 #   helm install caddy caddy-custom/caddy -n caddy --create-namespace \
-#     -f baremetal.yaml -f zerossl.yaml
+#     -f examples/caddy/baremetal.yaml \
+#     -f examples/caddy/zerossl.yaml
 #
 # Prerequisites:
 #   1. Create ZeroSSL account: https://app.zerossl.com/signup
@@ -22,28 +26,16 @@
 #   - Any CA supporting ACME with EAB
 
 tls:
-  certManagerCSI:
-    enabled: false
-
   acme:
     enabled: true
     email: admin@example.com
-
-    # ZeroSSL ACME directory
     ca: "https://acme.zerossl.com/v2/DV90"
-
-    # External Account Binding credentials
+    challenge: http    # or dns for wildcards
+    storage: kubernetes
     eab:
       keyId: "{env.ACME_EAB_KEY_ID}"
       macKey: "{env.ACME_EAB_MAC_KEY}"
 
-    # Challenge type
-    challenge: http    # or dns for wildcards
-
-    # Store certs in K8s Secrets
-    storage: kubernetes
-
-# Mount the EAB credentials secret
 extraEnv:
   - name: ACME_EAB_KEY_ID
     valueFrom:
@@ -55,6 +47,35 @@ extraEnv:
       secretKeyRef:
         name: acme-eab-creds
         key: ACME_EAB_MAC_KEY
+
+# ── Ingress example ───────────────────────────────────────────────────────────
+# spec.tls is required for HTTPS. caddy.ingress/tls: certmagic tells caddy-k8s
+# that CertMagic owns the cert — ZeroSSL issues it via ACME.
+#
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: myapp
+#   namespace: myapp
+#   annotations:
+#     caddy.ingress/tls: certmagic
+# spec:
+#   ingressClassName: caddy-custom
+#   tls:
+#     - hosts:
+#         - app.example.com
+#   rules:
+#     - host: app.example.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: myapp
+#                 port:
+#                   number: 8080
 
 # ── Alternative CAs ───────────────────────────────────────────────────────────
 #

@@ -1,83 +1,64 @@
 # ── On-Demand TLS with CertMagic ──────────────────────────────────────────────
-# Issue certificates dynamically on first request. No need to pre-list domains
-# or use wildcards — Caddy obtains a cert when a client connects.
+# Issue certificates dynamically on first request. Caddy obtains a cert when a
+# client connects to a hostname — no need to pre-create Certificate resources.
+#
+# Ingresses must have spec.tls to be routed to the HTTPS server (port 443).
+# Leave secretName empty — CertMagic issues the cert on first connection.
 #
 # Usage:
 #   helm install caddy caddy-custom/caddy -n caddy --create-namespace \
-#     -f baremetal.yaml -f ondemand-tls.yaml
+#     -f examples/caddy/baremetal.yaml \
+#     -f examples/caddy/ondemand-tls.yaml
 #
 # WARNING: Always set 'ask' URL in production to prevent certificate abuse!
 # Without validation, anyone could trigger cert issuance for any domain.
 
 tls:
-  certManagerCSI:
-    enabled: false
-
   acme:
     enabled: true
     email: admin@example.com
-    # Use staging CA for testing to avoid rate limits
+    # Use staging CA for testing to avoid rate limits:
     # ca: "https://acme-staging-v02.api.letsencrypt.org/directory"
-
-    # Challenge type - HTTP-01 is default, DNS-01 for private clusters
     challenge: http
-
-    # Store certs in K8s Secrets - no PVC needed
     storage: kubernetes
 
-    # ── On-Demand TLS ─────────────────────────────────────────────────────────
     onDemand:
       enabled: true
 
-      # IMPORTANT: Validation URL - must return 200 OK to allow cert issuance.
-      # Deploy a simple validator service that checks if the domain is allowed.
-      # Without this, on-demand TLS is unrestricted and dangerous!
-      #
-      # Example validator service:
-      #   - Check domain against allowlist
-      #   - Verify domain DNS points to your cluster
-      #   - Check domain exists in your database
+      # IMPORTANT: Validation endpoint — must return 200 OK to allow cert issuance.
+      # Deploy a service that checks the domain against your allowlist.
+      # Without this, on-demand TLS is unrestricted and dangerous in production.
       ask: "http://domain-validator.caddy.svc.cluster.local/check"
 
-      # Rate limits to prevent abuse
       rateLimit:
-        burst: 5          # Max certs to issue in the interval
-        interval: 2m      # Time window
+        burst: 5      # max certs to issue in the interval
+        interval: 2m  # time window
 
-# ── Example: Domain validator service ─────────────────────────────────────────
-# Deploy a simple service that validates domains before cert issuance.
+# ── Ingress example ───────────────────────────────────────────────────────────
+# spec.tls is required for HTTPS. caddy.ingress/tls: certmagic tells caddy-k8s
+# that CertMagic owns the cert — on-demand TLS issues it on first connection.
 #
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: domain-validator
-#   namespace: caddy
-# spec:
-#   selector:
-#     app: domain-validator
-#   ports:
-#     - port: 80
-#       targetPort: 8080
 # ---
-# apiVersion: apps/v1
-# kind: Deployment
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
 # metadata:
-#   name: domain-validator
-#   namespace: caddy
+#   name: myapp
+#   namespace: myapp
+#   annotations:
+#     caddy.ingress/tls: certmagic
 # spec:
-#   replicas: 1
-#   selector:
-#     matchLabels:
-#       app: domain-validator
-#   template:
-#     metadata:
-#       labels:
-#         app: domain-validator
-#     spec:
-#       containers:
-#         - name: validator
-#           image: nginx:alpine
-#           ports:
-#             - containerPort: 8080
-#           # Simple nginx config that returns 200 for allowed domains
-#           # In production, use a real service with database lookup
+#   ingressClassName: caddy-custom
+#   tls:
+#     - hosts:
+#         - app.example.com
+#   rules:
+#     - host: app.example.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: myapp
+#                 port:
+#                   number: 8080

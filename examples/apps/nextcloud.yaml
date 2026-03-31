@@ -12,6 +12,7 @@ ingress:
   enabled: true
   className: caddy-custom
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
     # Nextcloud .well-known redirects
     caddy.ingress/permanent-redirect: ""   # leave blank — handled per-path below
@@ -20,9 +21,9 @@ ingress:
     caddy.ingress/proxy-read-timeout: "3600"
     caddy.ingress/proxy-send-timeout: "3600"
   tls:
-    - secretName: ""   # unused — cert-manager CSI handles TLS at the Caddy level
-      hosts:
+    - hosts:
         - nextcloud.example.com
+      secretName: nextcloud-tls   # cert-manager creates this Secret in the Ingress namespace
 
 # Nextcloud needs these .well-known paths redirected to the correct locations.
 # Add them as additional Ingress resources or via the chart's built-in paths:

@@ -11,10 +11,11 @@ ingress:
   enabled: true
   className: caddy-custom
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
     # WebSocket support for live sync
     caddy.ingress/proxy-http-version: "1.1"
   nginxIngressAnnotations: false
   hostname: vault.example.com
-  tls: false   # TLS terminated at Caddy
-  tlsSecret: ""
+  tls: true
+  tlsSecret: vaultwarden-tls   # cert-manager creates this Secret in namespace vaultwarden

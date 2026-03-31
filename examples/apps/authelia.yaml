@@ -25,10 +25,12 @@ ingress:
   enabled: true
   className: caddy-custom
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
   subdomain: auth   # → auth.example.com
   tls:
-    enabled: false   # TLS at Caddy level
+    enabled: true
+    secret: authelia-tls   # cert-manager creates this Secret in namespace authelia
 
 configMap:
   default_redirection_url: "https://auth.example.com"

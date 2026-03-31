@@ -15,6 +15,7 @@ ingress:
   enabled: true
   className: caddy-custom
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
     caddy.ingress/proxy-body-size: "1G"   # for large repo pushes
   hosts:
@@ -25,6 +26,7 @@ ingress:
   tls:
     - hosts:
         - gitea.example.com
+      secretName: gitea-tls   # cert-manager creates this Secret in namespace gitea
 
 # SSH — expose via NodePort or a separate Service (not through Caddy HTTP)
 service:

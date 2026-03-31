@@ -16,6 +16,7 @@ metadata:
   name: azuracast
   namespace: azuracast
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
     caddy.ingress/proxy-body-size: "2G"       # music library uploads
     caddy.ingress/proxy-read-timeout: "3600"
@@ -23,6 +24,10 @@ metadata:
     caddy.ingress/proxy-http-version: "1.1"   # required for HLS streaming
 spec:
   ingressClassName: caddy-custom
+  tls:
+    - hosts:
+        - radio.example.com
+      secretName: azuracast-tls   # cert-manager creates this Secret in namespace azuracast
   rules:
     - host: radio.example.com
       http:

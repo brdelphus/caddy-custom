@@ -1,0 +1,152 @@
+# ── cert-manager integration ───────────────────────────────────────────────────
+# TLS certificates are issued by cert-manager and stored as Kubernetes Secrets.
+# caddy-k8s reads the Secret referenced in spec.tls and loads the certificate
+# into Caddy via the admin API. The Secret is watched — renewals are applied
+# automatically without a pod restart.
+#
+# The Secret must exist in the same namespace as the Ingress.
+#
+# This file is documentation only (all content is commented out).
+# No Helm values changes needed — cert-manager runs independently of Caddy.
+#
+# Prerequisites:
+#   helm repo add jetstack https://charts.jetstack.io && helm repo update
+#   helm install cert-manager jetstack/cert-manager \
+#     -n cert-manager --create-namespace --set crds.enabled=true
+
+# ── Step 1: ClusterIssuer ──────────────────────────────────────────────────────
+# Create once per cluster. HTTP-01 challenge — port 80 must be reachable.
+# For private clusters or wildcards, use dns01 instead (see bottom of file).
+#
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: ClusterIssuer
+# metadata:
+#   name: letsencrypt-prod
+# spec:
+#   acme:
+#     server: https://acme-v02.api.letsencrypt.org/directory
+#     email: admin@example.com
+#     privateKeySecretRef:
+#       name: letsencrypt-prod-key
+#     solvers:
+#       - http01:
+#           ingress:
+#             ingressClassName: caddy-custom
+#
+# Staging issuer (avoids rate limits while testing):
+#
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: ClusterIssuer
+# metadata:
+#   name: letsencrypt-staging
+# spec:
+#   acme:
+#     server: https://acme-staging-v02.api.letsencrypt.org/directory
+#     email: admin@example.com
+#     privateKeySecretRef:
+#       name: letsencrypt-staging-key
+#     solvers:
+#       - http01:
+#           ingress:
+#             ingressClassName: caddy-custom
+
+# ── Step 2: Ingress with cert-manager annotation ───────────────────────────────
+# Add cert-manager.io/cluster-issuer to the Ingress. cert-manager watches
+# Ingress resources and automatically creates the Certificate and Secret when
+# it sees this annotation — no separate Certificate CR needed.
+#
+# The Secret is created in the same namespace as the Ingress.
+# caddy-k8s loads it from spec.tls.secretName.
+#
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: myapp
+#   namespace: myapp
+#   annotations:
+#     cert-manager.io/cluster-issuer: letsencrypt-prod   # triggers cert issuance
+# spec:
+#   ingressClassName: caddy-custom
+#   tls:
+#     - hosts:
+#         - app.example.com
+#       secretName: myapp-tls   # cert-manager creates this Secret in namespace myapp
+#   rules:
+#     - host: app.example.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: myapp
+#                 port:
+#                   number: 8080
+
+# ── Manual Certificate CR (alternative) ───────────────────────────────────────
+# If you prefer explicit control or need wildcards, create a Certificate CR
+# instead of using the annotation. The result is the same — a Secret in the
+# Ingress namespace loaded by caddy-k8s.
+#
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: myapp-tls
+#   namespace: myapp             # must match the Ingress namespace
+# spec:
+#   secretName: myapp-tls        # referenced in Ingress spec.tls
+#   issuerRef:
+#     name: letsencrypt-prod
+#     kind: ClusterIssuer
+#   dnsNames:
+#     - app.example.com
+
+# ── Wildcard certificate ───────────────────────────────────────────────────────
+# Wildcards require DNS-01 challenge and a manual Certificate CR (the annotation
+# approach only issues per-hostname certs). The Secret must be in the same
+# namespace as the Ingress — replicate it across namespaces with a tool like
+# Reflector, or issue a separate Certificate per namespace.
+#
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: Certificate
+# metadata:
+#   name: wildcard-example-com
+#   namespace: myapp             # must match the Ingress namespace
+# spec:
+#   secretName: wildcard-example-com-tls
+#   issuerRef:
+#     name: letsencrypt-prod-dns
+#     kind: ClusterIssuer
+#   dnsNames:
+#     - example.com
+#     - "*.example.com"
+
+# ── DNS-01 ClusterIssuer (Cloudflare) ─────────────────────────────────────────
+# Required for wildcard certificates and private clusters not reachable from
+# the internet. Replace the solver block for other DNS providers.
+#
+# kubectl create secret generic cloudflare-api-token \
+#   --from-literal=api-token=YOUR_TOKEN -n cert-manager
+#
+# ---
+# apiVersion: cert-manager.io/v1
+# kind: ClusterIssuer
+# metadata:
+#   name: letsencrypt-prod-dns
+# spec:
+#   acme:
+#     server: https://acme-v02.api.letsencrypt.org/directory
+#     email: admin@example.com
+#     privateKeySecretRef:
+#       name: letsencrypt-prod-dns-key
+#     solvers:
+#       - dns01:
+#           cloudflare:
+#             apiTokenSecretRef:
+#               name: cloudflare-api-token
+#               key: api-token

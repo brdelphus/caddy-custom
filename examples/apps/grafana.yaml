@@ -8,12 +8,14 @@ ingress:
   enabled: true
   ingressClassName: caddy-custom
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
     caddy.ingress/ssl-redirect: "true"
   hosts:
     - grafana.example.com
   tls:
     - hosts:
         - grafana.example.com
+      secretName: grafana-tls   # cert-manager creates this Secret in namespace monitoring
 
 grafana.ini:
   server:

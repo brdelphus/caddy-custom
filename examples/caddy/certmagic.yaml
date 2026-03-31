@@ -1,0 +1,78 @@
+# ── CertMagic built-in ACME ───────────────────────────────────────────────────
+# Caddy issues and renews certificates automatically via ACME. No cert-manager
+# needed — Caddy discovers hostnames from Ingress rules and issues certs on
+# first request.
+#
+# Ingresses must have spec.tls to be routed to the HTTPS server (port 443).
+# Leave secretName empty — caddy-k8s will not try to load a cert from a Secret;
+# CertMagic handles the certificate for that hostname automatically.
+#
+# Usage (combine with baremetal.yaml or loadbalancer.yaml):
+#   helm install caddy caddy-custom/caddy -n caddy --create-namespace \
+#     -f examples/caddy/baremetal.yaml \
+#     -f examples/caddy/certmagic.yaml
+
+tls:
+  acme:
+    enabled: true
+    email: admin@example.com
+
+    # Challenge type:
+    #   http     — default, port 80 must be publicly reachable
+    #   tls-alpn — port 443, useful when port 80 is blocked
+    #   dns      — required for wildcards and private clusters
+    challenge: http
+
+    # Certificate storage backend:
+    #   kubernetes — stored as K8s Secrets (no PVC needed, survives restarts)
+    #   filesystem — stored in /data/caddy (requires persistence.enabled: true)
+    #   redis      — shared across replicas (use with loadbalancer.yaml + redis)
+    storage: kubernetes
+
+    # Staging CA — avoids rate limits while testing. Remove for production.
+    # ca: "https://acme-staging-v02.api.letsencrypt.org/directory"
+
+# ── Ingress example ───────────────────────────────────────────────────────────
+# spec.tls is required for HTTPS. caddy.ingress/tls: certmagic tells caddy-k8s
+# that CertMagic owns the cert — no secretName needed.
+#
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: myapp
+#   namespace: myapp
+#   annotations:
+#     caddy.ingress/tls: certmagic
+# spec:
+#   ingressClassName: caddy-custom
+#   tls:
+#     - hosts:
+#         - app.example.com
+#   rules:
+#     - host: app.example.com
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: myapp
+#                 port:
+#                   number: 8080
+
+# ── DNS-01 challenge (wildcards / private clusters) ───────────────────────────
+# The DNS provider module must be compiled into the image (DNS_PROVIDER build arg).
+# See https://github.com/caddy-dns for available providers.
+#
+# tls:
+#   acme:
+#     enabled: true
+#     email: admin@example.com
+#     challenge: dns
+#     storage: kubernetes
+#     dns:
+#       provider: cloudflare
+#       config: |
+#         api_token {env.CF_API_TOKEN}
+#       credentialsSecret: caddy-dns-creds   # keys exposed as env vars to Caddy
