@@ -1,4 +1,4 @@
-# caddy-custom
+# ingress-caddy
 
 > **Status: working, not yet battle-tested.**
 > Core functionality is operational and runs in a personal k3s cluster, but this project is still early. More real-world testing, edge case coverage, and community feedback is needed before it can be considered stable for general use. Contributions and issue reports are very welcome.
@@ -7,7 +7,7 @@ A custom [Caddy](https://caddyserver.com) image for Kubernetes, built to replace
 
 TLS is opt-in per Ingress: add `spec.tls` with a `secretName` and the module loads the certificate from the Kubernetes Secret automatically. Ingresses without `spec.tls` are HTTP only.
 
-Includes a built-in Kubernetes Ingress controller — apps set `ingressClassName: caddy-custom` and routes appear in Caddy automatically, no manual config editing required.
+Includes a built-in Kubernetes Ingress controller — apps set `ingressClassName: ingress-caddy` and routes appear in Caddy automatically, no manual config editing required.
 
 Supports two deployment modes:
 - **DaemonSet + hostPorts** — runs on every node, binds ports directly. Ideal for bare-metal k3s.
@@ -15,7 +15,7 @@ Supports two deployment modes:
 
 Created after migrating from ingress-nginx (deprecated) to Traefik, finding Traefik lacking, discovering Caddy, and realising there was no proper Kubernetes ingress support for it — so I built one.
 
-**Image:** `ghcr.io/brdelphus/caddy-custom`
+**Image:** `ghcr.io/brdelphus/ingress-caddy`
 
 ---
 
@@ -111,10 +111,10 @@ helm install reloader stakater/reloader -n kube-system
 ### 2. Install
 
 ```bash
-helm repo add caddy-custom https://brdelphus.github.io/caddy-custom
+helm repo add ingress-caddy https://brdelphus.github.io/ingress-caddy
 helm repo update
 
-helm install caddy caddy-custom/caddy \
+helm install caddy ingress-caddy/caddy \
   --namespace caddy \
   --create-namespace \
   --values values.local.yaml
@@ -133,7 +133,7 @@ helm install caddy ./helm \
 
 ```yaml
 k8sIngress:
-  ingressClass: caddy-custom
+  ingressClass: ingress-caddy
 
 realIP:
   trustedProxies:
@@ -157,7 +157,7 @@ metadata:
     caddy.ingress/tls: cert-manager          # cert-manager provisions the Secret
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  ingressClassName: caddy-custom
+  ingressClassName: ingress-caddy
   tls:
     - hosts:
         - app.example.com
@@ -221,7 +221,7 @@ L4 ports declared in `l4.hostPorts` are automatically added to the LoadBalancer 
 
 ```yaml
 k8sIngress:
-  ingressClass: caddy-custom   # matches spec.ingressClassName
+  ingressClass: ingress-caddy   # matches spec.ingressClassName
   isDefaultClass: false        # set true to make this the cluster default
   security:
     waf: false                 # inject Coraza WAF handler into every Ingress route (requires plugins.coraza.enabled: true)
@@ -538,7 +538,7 @@ metadata:
     caddy.ingress/tls: cert-manager               # cert-manager provisions the Secret
     cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
-  ingressClassName: caddy-custom
+  ingressClassName: ingress-caddy
   tls:
     - hosts:
         - app.example.com
