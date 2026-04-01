@@ -7,6 +7,10 @@ on:
       - helm/**
   workflow_dispatch:
 
+concurrency:
+  group: helm-release
+  cancel-in-progress: false   # queue, don't cancel — every release must complete
+
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
