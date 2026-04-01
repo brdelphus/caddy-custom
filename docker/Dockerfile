@@ -29,4 +29,6 @@ RUN set -eux; \
 FROM caddy:2.11.2
 COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
-LABEL org.opencontainers.image.description="Caddy with WAF, L4, rate limiting, cache, GeoIP, CrowdSec, defender, security (auth/SSO), k8s-ingress"
+LABEL org.opencontainers.image.title="ingress-caddy" \
+      org.opencontainers.image.description="Caddy-based Kubernetes ingress controller with WAF, L4, rate limiting, cache, GeoIP, CrowdSec, defender and SSO" \
+      org.opencontainers.image.source="https://github.com/brdelphus/ingress-caddy"

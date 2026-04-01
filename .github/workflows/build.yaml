@@ -18,7 +18,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE: ghcr.io/brdelphus/caddy-custom
+  IMAGE: ghcr.io/brdelphus/ingress-caddy
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
