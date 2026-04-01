@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.1] - 2026-03-31
+
+### Bug Fixes
+
+- **WAF: OWASP CRS rules were never loaded** — `wafHandler()` in caddy-k8s was missing the three mandatory `Include` directives (`@coraza.conf-recommended`, `@crs-setup.conf.example`, `@owasp_crs/*.conf`). `load_owasp_crs: true` only makes the virtual paths available; without the Includes, zero CRS rules were evaluated on any Ingress with `caddy.ingress/waf: on`.
+- **WAF: `SecRuleEngine` ordering fixed** — In both caddy-k8s and the Helm Caddyfile snippet, `SecRuleEngine` was placed before the CRS Includes. Since `@coraza.conf-recommended` resets it to `DetectionOnly`, our `On` override must come *after* all Includes.
+
+### Helm chart: 0.9.1
+
+---
+
 Versions track the `ingress-caddy` image. The Helm chart version is independent
 but its `appVersion` always matches the image version.
 

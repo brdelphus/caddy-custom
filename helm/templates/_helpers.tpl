@@ -336,12 +336,12 @@ Generate the Caddyfile content
     load_owasp_crs
     directives `
       Include @coraza.conf-recommended
-      SecRuleEngine {{ .Values.plugins.coraza.ruleEngine }}
       Include @crs-setup.conf.example
       Include @owasp_crs/*.conf
       {{- range .Values.plugins.coraza.customRules }}
       {{ . }}
       {{- end }}
+      SecRuleEngine {{ .Values.plugins.coraza.ruleEngine }}
     `
   }
   {{- end }}

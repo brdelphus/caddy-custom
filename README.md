@@ -264,6 +264,7 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/cors-max-age` | Preflight cache duration in seconds |
 | `caddy.ingress/limit-rps` | Max requests/second per client IP |
 | `caddy.ingress/waf: "off"\|"on"\|"detection"` | Per-route WAF override |
+| `caddy.ingress/waf-rules-configmap` | ConfigMap name (same namespace) containing custom Coraza directives for this Ingress. Auto-created with a commented template when `waf: on/detection` is first set. |
 | `caddy.ingress/whitelist-source-range` | CIDRs to allow; all others 403 |
 | `caddy.ingress/blocklist-source-range` | CIDRs to deny; all others pass |
 | `caddy.ingress/basic-auth-secret` | Secret with `auth` htpasswd key |
@@ -348,6 +349,31 @@ metadata:
   annotations:
     caddy.ingress/waf: "on"
 ```
+
+**Per-Ingress WAF rules (auto-created ConfigMap):**
+
+When an Ingress is created with `caddy.ingress/waf: "on"` or `"detection"`, caddy-k8s automatically creates a ConfigMap named `<ingress-name>-waf-rules` in the same namespace and sets the `caddy.ingress/waf-rules-configmap` annotation on the Ingress. The ConfigMap is owned by the Ingress and will be garbage-collected when the Ingress is deleted.
+
+Edit the ConfigMap to add per-Ingress Coraza directives:
+
+```yaml
+# kubectl edit configmap myapp-waf-rules -n mynamespace
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-waf-rules
+  namespace: mynamespace
+data:
+  directives: |
+    # Disable a false-positive rule for this app
+    SecRuleRemoveById 920350
+    # Restrict a rule to specific args only
+    SecRuleUpdateTargetById 942100 "!ARGS:search"
+    # Add a custom block rule
+    SecRule ARGS "@contains badword" "id:1001,phase:2,deny,status:400"
+```
+
+Directives are injected after the OWASP CRS Includes so `SecRuleRemoveById` and `SecRuleUpdateTargetById` work against already-loaded rules. The `SecRuleEngine` mode is always controlled by the `caddy.ingress/waf` annotation and cannot be overridden in the ConfigMap.
 
 ### CrowdSec
 
