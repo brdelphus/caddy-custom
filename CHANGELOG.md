@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.8.1] - 2026-03-31
+
+### Changes
+
+- Repo renamed from `caddy-custom` to `ingress-caddy`
+- Image renamed to `ghcr.io/brdelphus/ingress-caddy`
+- Default `IngressClass` changed from `caddy-custom` to `caddy` — update `spec.ingressClassName` in existing Ingress resources
+
+---
+
 ## [0.8.0] - 2026-03-31
 
 ### New Features
