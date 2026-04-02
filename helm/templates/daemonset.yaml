@@ -6,13 +6,10 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "caddy.labels" . | nindent 4 }}
+  {{- if and (not .Values.configReloader.enabled) (include "caddy.reloaderAnnotation" .) }}
   annotations:
-    {{- if not .Values.configReloader.enabled }}
     {{- include "caddy.reloaderAnnotation" . | nindent 4 }}
-    {{- end }}
-    {{- with .Values.podAnnotations }}
-    {{- toYaml . | nindent 4 }}
-    {{- end }}
+  {{- end }}
 spec:
   selector:
     matchLabels:
@@ -29,17 +26,32 @@ spec:
     metadata:
       labels:
         {{- include "caddy.selectorLabels" . | nindent 8 }}
-      {{- if not .Values.configReloader.enabled }}
       annotations:
+        {{- if not .Values.configReloader.enabled }}
         # Force pod restart when Caddyfile changes (only when configReloader is off)
         checksum/caddyfile: {{ include (print $.Template.BasePath "/configmap-caddyfile.yaml") . | sha256sum }}
-      {{- end }}
+        {{- end }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
     spec:
       serviceAccountName: {{ include "caddy.serviceAccountName" . }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       tolerations:
         {{- toYaml .Values.tolerations | nindent 8 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
 
@@ -75,6 +87,10 @@ spec:
       - name: caddy
         image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- with .Values.securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         ports:
         - name: http
           containerPort: 80
