@@ -117,15 +117,16 @@ spec:
           protocol: {{ .protocol | upper }}
         {{- end }}
 
-        {{- if or (and .Values.tls.acme.enabled .Values.tls.acme.dns.credentialsSecret) .Values.plugins.security.credentialsSecret }}
+        {{- $hasEnvFrom := or (and .Values.tls.acme.enabled .Values.tls.acme.dns.credentialsSecret) .Values.plugins.security.credentialsSecret .Values.plugins.security.enabled }}
+        {{- if $hasEnvFrom }}
         envFrom:
         {{- if and .Values.tls.acme.enabled .Values.tls.acme.dns.credentialsSecret }}
         - secretRef:
             name: {{ .Values.tls.acme.dns.credentialsSecret }}
         {{- end }}
-        {{- if .Values.plugins.security.credentialsSecret }}
+        {{- if .Values.plugins.security.enabled }}
         - secretRef:
-            name: {{ .Values.plugins.security.credentialsSecret }}
+            name: {{ .Values.plugins.security.credentialsSecret | default (printf "%s-auth-key" (include "caddy.fullname" .)) }}
         {{- end }}
         {{- end }}
         env:
