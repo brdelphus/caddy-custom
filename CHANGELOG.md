@@ -2,6 +2,23 @@
 
 ## [1.0.2] - 2026-04-02
 
+### New Features
+
+- **`caddy.ingress/auth-policy` annotation** — reference a ConfigMap (same namespace) whose `handler` key contains raw Caddy handler JSON. Injected into the route after the WAF and before the reverse_proxy, enabling caddy-security authorization policies without editing the Caddyfile directly.
+
+### Helm chart: 0.9.4
+
+- **`imagePullSecrets`** — support private container registries
+- **`affinity`** — pod affinity/anti-affinity rules
+- **`podSecurityContext`** — pod-level security context
+- **`securityContext`** — container-level security context; defaults to `NET_BIND_SERVICE` + drop all other capabilities
+- **`service.labels`** — extra labels on the LoadBalancer Service
+- **Bug fix:** `podAnnotations` was applied to DaemonSet metadata instead of the pod template
+
+---
+
+## [1.0.2] - 2026-04-02
+
 ### Security
 
 - **Base image switched from Alpine 3.23 to Chainguard static (Wolfi)** — eliminates all OS-level CVEs (16 found by Grype on Alpine: 3 High, 10 Medium, 3 Low in `curl`, `libcrypto3`, `nghttp2-libs`, `busybox`). Chainguard images are rebuilt daily with automated patching.
