@@ -267,7 +267,9 @@ Per-Ingress behaviour is controlled via `caddy.ingress/` annotations on individu
 | `caddy.ingress/waf-rules-configmap` | ConfigMap name (same namespace) containing custom Coraza directives for this Ingress. Auto-created with a commented template when `waf: on/detection` is first set. |
 | `caddy.ingress/whitelist-source-range` | CIDRs to allow; all others 403 |
 | `caddy.ingress/blocklist-source-range` | CIDRs to deny; all others pass |
-| `caddy.ingress/basic-auth-secret` | Secret with `auth` htpasswd key |
+| `caddy.ingress/basic-auth-secret` | Secret with `auth` htpasswd key (bcrypt only) |
+| `caddy.ingress/basic-auth-realm` | WWW-Authenticate realm (default: `Restricted`) |
+| `caddy.ingress/auth-policy` | ConfigMap name (same namespace) whose `handler` key contains raw Caddy handler JSON injected after WAF and before `reverse_proxy` — use for caddy-security `authorize` policies |
 
 Full annotation reference and examples: [caddy-k8s](https://github.com/brdelphus/caddy-k8s#annotations)
 
@@ -503,14 +505,37 @@ kubectl create secret generic caddy-security-creds \
   -n caddy
 ```
 
-To protect a route, import the authorization policy in your route file:
+To protect a route, use the `caddy.ingress/auth-policy` annotation referencing a ConfigMap that contains the caddy-security `authorize` handler JSON:
 
-```caddyfile
-app.example.com {
-  import authorize-users
-  reverse_proxy app.default.svc.cluster.local:8080
-}
+```yaml
+# 1. Create the policy ConfigMap (same namespace as the Ingress)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: myapp-auth-policy
+  namespace: myapp
+data:
+  handler: |
+    {
+      "handler": "authorize",
+      "context": "default",
+      "primary": "users"
+    }
+---
+# 2. Reference it on the Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  namespace: myapp
+  annotations:
+    caddy.ingress/auth-policy: myapp-auth-policy
+spec:
+  ingressClassName: caddy
+  ...
 ```
+
+The handler is injected after the WAF and before `reverse_proxy`. The `"primary"` value must match a policy name defined in `plugins.security.policies`.
 
 The authentication portal is served at `/auth/*` and handles OAuth callbacks automatically.
 
@@ -631,6 +656,63 @@ Ensures minimum availability during voluntary disruptions (node drains, upgrades
 podDisruptionBudget:
   enabled: true
   minAvailable: 1        # or use maxUnavailable: 1
+```
+
+### Image pull secrets
+
+For private container registries:
+
+```yaml
+imagePullSecrets:
+  - name: my-registry-secret
+```
+
+### Pod scheduling
+
+```yaml
+# Spread pods across nodes — recommended for Deployment mode
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: caddy
+
+nodeSelector: {}
+tolerations: []
+```
+
+### Security context
+
+```yaml
+# Pod-level security context
+podSecurityContext:
+  fsGroup: 1000   # example — not needed for the default root user
+
+# Container-level security context
+# NET_BIND_SERVICE is required to bind ports 80/443.
+# Default: drop all capabilities, keep NET_BIND_SERVICE, run as root.
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+    add: ["NET_BIND_SERVICE"]
+  runAsUser: 0
+  runAsGroup: 0
+```
+
+### Service labels
+
+Extra labels on the LoadBalancer Service (useful for external-dns or LB selectors):
+
+```yaml
+service:
+  enabled: true
+  labels:
+    external-dns.alpha.kubernetes.io/hostname: caddy.example.com
 ```
 
 ### IP Dual Stack (IPv4 + IPv6)
