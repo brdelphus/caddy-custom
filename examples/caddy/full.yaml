@@ -121,6 +121,35 @@ plugins:
   #       injectHeaders: true
   #   credentialsSecret: caddy-security-creds
 
+# ── Image pull secrets ────────────────────────────────────────────────────────
+# Required for private container registries.
+# imagePullSecrets:
+#   - name: my-registry-secret
+
+# ── Pod scheduling ────────────────────────────────────────────────────────────
+# Spread replicas across nodes — recommended for Deployment mode.
+# affinity:
+#   podAntiAffinity:
+#     preferredDuringSchedulingIgnoredDuringExecution:
+#       - weight: 100
+#         podAffinityTerm:
+#           topologyKey: kubernetes.io/hostname
+#           labelSelector:
+#             matchLabels:
+#               app.kubernetes.io/name: caddy
+
+# ── Security context ──────────────────────────────────────────────────────────
+# Defaults: drop all capabilities, keep NET_BIND_SERVICE for ports 80/443.
+# Override here if your environment requires specific UIDs or capabilities.
+# podSecurityContext: {}
+# securityContext:
+#   allowPrivilegeEscalation: false
+#   capabilities:
+#     drop: ["ALL"]
+#     add: ["NET_BIND_SERVICE"]
+#   runAsUser: 0
+#   runAsGroup: 0
+
 # ── High Availability ─────────────────────────────────────────────────────────
 
 podDisruptionBudget:
