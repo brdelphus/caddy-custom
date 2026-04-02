@@ -11,6 +11,9 @@ ARG BUILDPLATFORM
 # Leave empty (default) to use HTTP-01 or TLS-ALPN-01 challenges only.
 ARG DNS_PROVIDER=""
 
+# Build a fully static binary so it runs on Chainguard (glibc) without depending on musl
+ENV CGO_ENABLED=0
+
 RUN set -eux; \
     xcaddy build \
     --with github.com/corazawaf/coraza-caddy/v2@v2.4.0 \
@@ -26,12 +29,18 @@ RUN set -eux; \
     --with github.com/pberkel/caddy-storage-redis \
     ${DNS_PROVIDER:+--with ${DNS_PROVIDER}}
 
-FROM caddy:2.11.2
-COPY --from=builder /usr/bin/caddy /usr/bin/caddy
+# Chainguard static: distroless Wolfi base, 0 CVEs, daily rebuilds, Sigstore-signed
+# Includes CA certificates and timezone data — no shell or package manager
+FROM cgr.dev/chainguard/static:latest
 
-# Upgrade OS packages with known vulnerabilities not yet fixed in the base image
-RUN apk upgrade --no-cache
+COPY --from=builder /usr/bin/caddy /usr/bin/caddy
 
 LABEL org.opencontainers.image.title="ingress-caddy" \
       org.opencontainers.image.description="Caddy-based Kubernetes ingress controller with WAF, L4, rate limiting, cache, GeoIP, CrowdSec, defender and SSO" \
-      org.opencontainers.image.source="https://github.com/brdelphus/ingress-caddy"
+      org.opencontainers.image.source="https://github.com/brdelphus/ingress-caddy" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.url="https://caddyserver.com" \
+      org.opencontainers.image.vendor="Light Code Labs" \
+      org.opencontainers.image.documentation="https://caddyserver.com/docs"
+
+ENTRYPOINT ["/usr/bin/caddy"]
