@@ -455,13 +455,10 @@ Generate the Caddyfile content
 # server names for :443 and :80. Without these blocks the module fails with
 # "no Caddy server listening on :443 found". Routes are injected dynamically
 # by caddy-k8s; these blocks just anchor the servers so discovery works.
-# tls on :443 creates the TLS connection policies caddy-k8s relies on.
 :80 {
 }
 
 :443 {
-  tls {
-  }
 }
 
 # ── Site routes (managed via ConfigMap caddy-routes) ───────────────────────────
