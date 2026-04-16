@@ -6,7 +6,7 @@ fullnameOverride: ""
 
 image:
   repository: ghcr.io/brdelphus/ingress-caddy
-  tag: "1.0.2"
+  tag: "1.0.3"
   pullPolicy: IfNotPresent
 
 # Image pull secrets for private registries.
@@ -416,8 +416,10 @@ caddyfile:
 # ── Admin API ──────────────────────────────────────────────────────────────────
 
 admin:
-  # Bind to localhost only — the metrics service exposes it via ClusterIP
-  host: localhost
+  # Bind to all interfaces so kubelet liveness/readiness probes can reach the
+  # admin API when using hostPorts (not hostNetwork). The metrics ClusterIP
+  # service gates external access; pod network is already cluster-internal.
+  host: ""
   port: 2019
 
 # ── LoadBalancer service ───────────────────────────────────────────────────────

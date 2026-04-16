@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.3] - 2026-04-16
+
+### Bug Fixes
+
+- **Caddy container no longer exits immediately on startup** — Dockerfile was missing `CMD`; the binary printed help text and exited. Added `CMD ["run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile"]` to the Dockerfile and matching `args` to the DaemonSet template so both the image default and the chart are self-consistent.
+- **Liveness/readiness probes now reach the admin API** — `admin` was bound to `localhost` and probes used `host: localhost`, which the kubelet resolves to the *node's* loopback rather than the pod's. Changed `admin.host` default to `""` (binds `0.0.0.0`) and removed the `host:` override from both probes. Affected all deployments using `hostPorts` (non-`hostNetwork`); pods were killed after ~70 s by the failing liveness probe.
+
+### Helm chart: 0.9.5
+
+---
+
 ## [1.0.2] - 2026-04-02
 
 ### New Features
