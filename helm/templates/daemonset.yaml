@@ -151,14 +151,14 @@ spec:
 
         readinessProbe:
           httpGet:
-            path: /
+            path: /config/
             port: admin
           initialDelaySeconds: 5
           periodSeconds: 10
 
         livenessProbe:
           httpGet:
-            path: /
+            path: /config/
             port: admin
           initialDelaySeconds: 15
           periodSeconds: 20
