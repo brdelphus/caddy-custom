@@ -150,15 +150,13 @@ spec:
           {{- toYaml .Values.resources | nindent 10 }}
 
         readinessProbe:
-          httpGet:
-            path: /config/
+          tcpSocket:
             port: admin
           initialDelaySeconds: 5
           periodSeconds: 10
 
         livenessProbe:
-          httpGet:
-            path: /config/
+          tcpSocket:
             port: admin
           initialDelaySeconds: 15
           periodSeconds: 20
