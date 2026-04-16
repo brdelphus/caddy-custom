@@ -460,7 +460,8 @@ Generate the Caddyfile content
 }
 
 :443 {
-  tls
+  tls {
+  }
 }
 
 # ── Site routes (managed via ConfigMap caddy-routes) ───────────────────────────
