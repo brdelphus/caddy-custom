@@ -146,6 +146,12 @@ Generate the Caddyfile content
 
   k8s_ingress {
     ingress_class {{ .Values.k8sIngress.ingressClass }}
+    {{- if .Values.k8sIngress.serverName }}
+    server_name {{ .Values.k8sIngress.serverName }}
+    {{- end }}
+    {{- if .Values.k8sIngress.httpServerName }}
+    http_server_name {{ .Values.k8sIngress.httpServerName }}
+    {{- end }}
     {{- if .Values.k8sIngress.watchNamespace }}
     namespace {{ .Values.k8sIngress.watchNamespace }}
     {{- end }}

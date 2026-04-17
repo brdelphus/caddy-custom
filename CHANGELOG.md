@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.0.4] - 2026-04-17
+
+### Bug Fixes
+
+- **k8s_ingress now starts and watches Ingress resources** — `Start()` was calling `GET /config/apps/http/servers` while Caddy held the config write-lock, causing a permanent deadlock: the admin API read blocked forever, `Start()` never returned, and no Ingress routes were ever injected. Fixed by spawning the server-name resolution + informer in a goroutine so `Start()` returns immediately. `resolveServerName` now retries with a 5-second timeout per attempt.
+- **Placeholder `:443` block no longer fails to parse** — bare `tls` directive is invalid in a port-based site block; changed to `tls {}` (block form), then removed entirely since the placeholder only needs to anchor the server for k8s_ingress discovery (the deadlock fix above makes this moot anyway).
+- **k8s_ingress server names now configured explicitly** — added `server_name` / `http_server_name` to the `k8s_ingress` Caddyfile block (values: `serverName`, `httpServerName`) to bypass auto-discovery and avoid the admin API call even in edge cases where the goroutine fix might race.
+
+### Helm chart: 0.9.6
+
+---
+
 ## [1.0.3] - 2026-04-16
 
 ### Bug Fixes

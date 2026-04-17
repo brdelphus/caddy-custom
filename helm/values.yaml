@@ -6,7 +6,7 @@ fullnameOverride: ""
 
 image:
   repository: ghcr.io/brdelphus/ingress-caddy
-  tag: "1.0.3"
+  tag: "1.0.4"
   pullPolicy: IfNotPresent
 
 # Image pull secrets for private registries.
@@ -573,6 +573,16 @@ k8sIngress:
   ingressClass: caddy
   # Set true to make this the cluster-wide default IngressClass
   isDefaultClass: false
+
+  # ── Caddy server names ──────────────────────────────────────────────────────────
+  # k8s_ingress resolves the Caddy server names for :443 and :80 by querying
+  # GET /config/apps/http/servers at startup. This call deadlocks because Start()
+  # is invoked while Caddy holds the config write-lock. Setting these explicitly
+  # bypasses the admin API lookup entirely.
+  # Caddy assigns names in Caddyfile order; with the default placeholder blocks
+  # (:80, :443) auto-HTTPS processing yields srv0=:443, srv1=:80.
+  serverName: "srv0"
+  httpServerName: "srv1"
 
   # ── Namespace filtering ─────────────────────────────────────────────────────────
   # Watch Ingress resources only in specific namespace(s).
