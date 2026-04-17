@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.5] - 2026-04-17
+
+### Bug Fixes
+
+- **k8s_ingress deadlock fixed at root** — server name discovery moved from `Start()` to `Provision()` using `ctx.App("http")` (in-process Go API). `Provision()` is called before Caddy acquires the config write-lock, so accessing the HTTP app's `Servers` map is safe. `Start()` no longer calls the admin API at all; the goroutine fallback polls with retry only if `Provision()` couldn't discover names.
+
+### Helm chart: 0.9.7
+
+---
+
 ## [1.0.4] - 2026-04-17
 
 ### Bug Fixes
