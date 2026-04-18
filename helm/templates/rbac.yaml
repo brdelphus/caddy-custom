@@ -57,6 +57,9 @@ rules:
     verbs: ["get", "list", "watch"]
     {{- end }}
   - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  - apiGroups: [""]
     resources: ["events"]
     verbs: ["create", "patch"]
 ---

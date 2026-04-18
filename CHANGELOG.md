@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.13] - 2026-04-18
+
+### Bug Fixes
+
+- **`skip_hosts` 409 on Unskip** — Caddy's admin `PUT` creates a key and returns 409 if it already exists; `PATCH` replaces an existing value. After the first `Skip()` call created the `skip_hosts` key, subsequent `rebuild()` calls from `Unskip()` used `PUT` and got `409 key already exists`. Fixed by including `skip_hosts: []` in the `logs` payload written by `Enable()` (guaranteeing the key exists) and switching `rebuild()` to `PATCH`.
+- **Helm: ConfigMap RBAC** — added `configmaps` `get/list/watch/create/update/patch` to the ingress controller `ClusterRole` so the WAF rules ConfigMap auto-creation and `auth-policy` ConfigMap reads work across all ingress namespaces.
+
+### Helm chart: 0.9.15
+
+---
+
 ## [1.0.12] - 2026-04-18
 
 ### Bug Fixes
