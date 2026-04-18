@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.8] - 2026-04-18
+
+### Chore
+
+- **Bump Go 1.26.1 → 1.26.2** — resolves govulncheck CVEs GO-2026-4863/4864/4865/4866/4867 in the Go standard library (`crypto/tls`, `crypto/x509`, `html/template`).
+
+### Helm chart: 0.9.10
+
+---
+
 ## [1.0.7] - 2026-04-18
 
 ### Bug Fixes
