@@ -6,7 +6,7 @@ fullnameOverride: ""
 
 image:
   repository: ghcr.io/brdelphus/ingress-caddy
-  tag: "1.0.17"
+  tag: "1.0.18"
   pullPolicy: IfNotPresent
 
 # Image pull secrets for private registries.
@@ -608,6 +608,12 @@ k8sIngress:
   # When enabled, Caddy writes one JSON access log line per request to stderr.
   # Individual Ingresses can suppress logging via caddy.ingress/access-log: "false".
   accessLog: false
+
+  # ── Verbose logs ─────────────────────────────────────────────────────────────────
+  # When false (default), per-ingress sync events are demoted to Debug level and
+  # admin API "received request" INFO logs are suppressed (WARN+ only).
+  # Set to true to restore full logging for debugging.
+  verboseLogs: false
 
 # ── Bundled Redis (optional) ───────────────────────────────────────────────────
 # When enabled, deploys a Redis pod alongside Caddy using the Bitnami Redis

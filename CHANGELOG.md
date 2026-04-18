@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.18] - 2026-04-18
+
+### New Features
+
+- **`verbose_logs` option** — new `k8sIngress.verboseLogs` Helm value (default `false`). When off: per-ingress sync/annotation events are demoted to Debug level; the `admin.api` logger is set to WARN, hiding per-request INFO entries while keeping errors visible. Set to `true` to restore full Info-level logging for debugging.
+
+### Bug Fixes
+
+- **`config is unchanged` log noise** — the access log manager was PATCHing `skip_hosts` on every 30s ingress re-sync even when the list hadn't changed, causing Caddy to emit a `"config is unchanged"` INFO line per ingress per cycle. Fixed by tracking the last-sent skip list and skipping the PATCH when the value is identical.
+
+### Helm chart: 0.9.20
+
+---
+
 ## [1.0.17] - 2026-04-18
 
 ### Bug Fixes
