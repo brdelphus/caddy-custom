@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.14] - 2026-04-18
+
+### Bug Fixes
+
+- **`Enable()` 409 on module restart** — `PUT /config/logging/logs/access` returned `409 key already exists` on every Caddy config reload because the "access" logger persists across module restarts. Added `putOrPatch()` helper to `adminClient` that retries with `PATCH` on 409, and switched both `PUT` calls in `Enable()` (logger registration and server logs config) to use it. Access logging now enables cleanly on restart without error logs.
+
+### Helm chart: 0.9.16
+
+---
+
 ## [1.0.13] - 2026-04-18
 
 ### Bug Fixes
