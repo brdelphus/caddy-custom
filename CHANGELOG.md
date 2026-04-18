@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.10] - 2026-04-18
+
+### Bug Fixes
+
+- **WAF annotation no longer fails with unmarshal error** — `coraza-caddy` expects `directives` as a single newline-joined string; we were passing a `[]string`, causing `cannot unmarshal array into Go struct field corazaModule.directives of type string` and rejecting the entire route. Fixed by joining the directive slice with `\n` before serialising.
+- **`upsertRoute` retries after admin API restart** — an in-place Caddy config reload (triggered by every admin API write) briefly takes the admin API offline. The subsequent POST to re-add the route would fail, leaving the ingress without a route until the next annotation change. Fixed by retrying up to 3 times with 0 / 500 ms / 1 s backoff.
+
+### Helm chart: 0.9.12
+
+---
+
 ## [1.0.9] - 2026-04-18
 
 ### Bug Fixes
