@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.9] - 2026-04-18
+
+### Bug Fixes
+
+- **Concurrent `handleAdd` race eliminated** — during Caddy config reloads, the old and new module instances overlap. Both would see no existing route (404) and race to POST it, producing a `duplicate @id` error and leaving a stale route behind after the loser's DELETE. Fixed by adding a per-Ingress mutex via `sync.Map` in `App`; `handleAdd` and `handleDelete` now serialize per `namespace/name` key across concurrent instances.
+
+### Helm chart: 0.9.11
+
+---
+
 ## [1.0.8] - 2026-04-18
 
 ### Chore
