@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.0.21] - 2026-04-22
+
+### Dependency Updates
+
+- **coraza-caddy** v2.4.0 → v2.5.0
+- **caddy-ratelimit** commit pin → v0.1.0 (first stable release)
+- **caddy-maxmind-geolocation** v1.0.1 → v1.0.3
+- **caddy-crowdsec-bouncer** v0.10.1 → v0.12.1
+- **caddy-security** v1.1.59 → v1.1.62
+
+### Helm chart: 0.9.23
+
+---
+
 ## [1.0.20] - 2026-04-19
 
 ### Bug Fixes
