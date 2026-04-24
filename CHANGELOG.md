@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.0.21] - 2026-04-22 (Helm chart: 0.9.24)
+
+### Bug Fixes
+
+- **RBAC: `ingresses` missing `patch` verb** — caddy-k8s auto-patches the `caddy.ingress/waf-rules-configmap` annotation back onto the Ingress after creating the ConfigMap, but the ClusterRole only granted `get/list/watch`. Every sync cycle logged a 403 Forbidden. Added `patch` to the `ingresses` rule.
+
+### Helm chart: 0.9.24 (was 0.9.23)
+
+---
+
 ## [1.0.21] - 2026-04-22
 
 ### Dependency Updates
