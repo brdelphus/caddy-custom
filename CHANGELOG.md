@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.22] - 2026-05-05
+
+### Dependency updates
+
+- **caddy-kubernetes-storage** pinned to `22ad645`
+- **caddy-storage-redis** pinned to `v1.8.0`
+
+### Helm chart: 0.9.25
+
+---
+
 ## [1.0.21] - 2026-04-22 (Helm chart: 0.9.24)
 
 ### Bug Fixes

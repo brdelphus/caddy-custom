@@ -25,8 +25,8 @@ RUN set -eux; \
     --with pkg.jsn.cam/caddy-defender=github.com/jasonlovesdoggo/caddy-defender@v0.10.0 \
     --with github.com/greenpau/caddy-security@v1.1.62 \
     --with github.com/brdelphus/caddy-k8s@ba54209 \
-    --with github.com/brdelphus/caddy-kubernetes-storage \
-    --with github.com/pberkel/caddy-storage-redis \
+    --with github.com/brdelphus/caddy-kubernetes-storage@22ad645 \
+    --with github.com/pberkel/caddy-storage-redis@v1.8.0 \
     ${DNS_PROVIDER:+--with ${DNS_PROVIDER}}
 
 # Chainguard static: distroless Wolfi base, 0 CVEs, daily rebuilds, Sigstore-signed
